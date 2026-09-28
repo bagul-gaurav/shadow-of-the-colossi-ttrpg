@@ -1,0 +1,37 @@
+rules_version = '2';
+// Login-only rules (requireLogin = true in quartz/static/party/index.html):
+// only logged-in party members can read or write; private objectives are visible to owner and GM only.
+// Paste into Firebase console → Firestore → Rules. Default public-read version: firestore.rules.
+// Party list lives in members/{username@party.local} = { name: "Kael", gm: false }. Add docs by hand in the console.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function memberPath() { return /databases/$(db)/documents/members/$(request.auth.token.email.lower()); }
+    function member() { return signedIn() && exists(memberPath()); }
+    function gm() { return member() && get(memberPath()).data.gm == true; }
+
+    match /members/{email} {
+      allow read: if signedIn() && (request.auth.token.email.lower() == email || member());
+      allow write: if gm();
+    }
+
+    // Readable by the whole party; only the author or GM can edit or delete.
+    match /notes/{id} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.author == request.auth.uid;
+      allow update: if member() && (resource.data.author == request.auth.uid || gm())
+                    && request.resource.data.author == resource.data.author;
+      allow delete: if member() && (resource.data.author == request.auth.uid || gm());
+    }
+
+    // Party objectives: any member can tick. Private ones: owner and GM only.
+    match /objectives/{id} {
+      allow read: if member() && (resource.data.private == false || resource.data.owner == request.auth.uid || gm());
+      allow create: if member() && request.resource.data.owner == request.auth.uid && request.resource.data.private is bool;
+      allow update: if member() && request.resource.data.owner == resource.data.owner
+                    && (resource.data.owner == request.auth.uid || gm()
+                        || (resource.data.private == false && request.resource.data.private == false));
+      allow delete: if member() && (resource.data.owner == request.auth.uid || gm());
+    }
+  }
+}

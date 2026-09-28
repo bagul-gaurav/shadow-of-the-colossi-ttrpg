@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Party</title>
+<style>
+  :root {
+    --light: #faf8f8; --lightgray: #e5e5e5; --gray: #b8b8b8; --darkgray: #4e4e4e;
+    --dark: #2b2b2b; --secondary: #284b63; --tertiary: #84a59d;
+    --highlight: rgba(143,159,169,.15); --bodyFont: system-ui, sans-serif; --headerFont: var(--bodyFont);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 2px; background: var(--light); color: var(--darkgray); font: 1rem/1.5 var(--bodyFont); }
+  h3 { font-family: var(--headerFont); color: var(--dark); margin: 1.25rem 0 .5rem; }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { background: var(--highlight); border: 1px solid var(--lightgray); border-radius: 6px; padding: .3rem .8rem; cursor: pointer; }
+  button:hover { border-color: var(--secondary); color: var(--secondary); }
+  button.primary { background: var(--secondary); color: var(--light); border-color: var(--secondary); }
+  input[type=text], input[type=password], textarea { width: 100%; background: transparent; border: 1px solid var(--lightgray); border-radius: 6px; padding: .4rem .6rem; }
+  textarea { min-height: 14rem; resize: vertical; }
+  input:focus, textarea:focus { outline: 2px solid var(--tertiary); outline-offset: -1px; }
+  .bar { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+  .bar .grow { flex: 1; }
+  .muted { color: var(--gray); font-size: .875rem; }
+  .card { border: 1px solid var(--lightgray); border-radius: 8px; padding: .75rem; margin: .5rem 0; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li.note { padding: .5rem .25rem; border-bottom: 1px solid var(--lightgray); cursor: pointer; }
+  li.note:hover, li.note.sel { background: var(--highlight); }
+  li.obj { display: flex; gap: .5rem; align-items: baseline; padding: .35rem 0; border-bottom: 1px solid var(--lightgray); }
+  li.obj .t { flex: 1; overflow-wrap: anywhere; }
+  li.obj.done .t { text-decoration: line-through; color: var(--gray); }
+  .read { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .x { background: none; border: 0; color: var(--gray); padding: 0 .3rem; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<form class="bar" id="login" hidden>
+  <input type="text" id="luser" placeholder="Username" autocomplete="username" required style="flex:1;min-width:8rem;width:auto" />
+  <input type="password" id="lpass" placeholder="Password" autocomplete="current-password" required style="flex:1;min-width:8rem;width:auto" />
+  <button class="primary">Log in</button>
+  <span class="muted" id="lmsg" style="flex-basis:100%"></span>
+</form>
+<div class="bar" id="whobar" hidden><span class="grow muted" id="who"></span><button id="signout">Log out</button></div>
+
+<section id="notes" hidden>
+  <div class="bar"><h3 class="grow">Party notes</h3><button class="primary" id="newnote" hidden>New note</button></div>
+  <div class="card" id="editor" hidden>
+    <div id="edit">
+      <input type="text" id="ntitle" placeholder="Title" />
+      <p><textarea id="nbody" placeholder="Write your notes…"></textarea></p>
+      <div class="bar"><span class="grow muted" id="nstatus"></span><button id="ndelete">Delete</button><button id="nclose">Close</button></div>
+    </div>
+    <div id="view">
+      <h3 id="vtitle"></h3><div class="read" id="vbody"></div>
+      <div class="bar"><span class="grow muted" id="vmeta"></span><button id="vclose">Close</button></div>
+    </div>
+  </div>
+  <ul id="notelist"></ul>
+</section>
+
+<section id="objectives" hidden>
+  <form class="bar" id="addobj" hidden>
+    <input type="text" id="otext" placeholder="New objective" required maxlength="500" style="flex:1;width:auto" />
+    <label id="oprivlabel"><input type="checkbox" id="opriv" /> Private</label>
+    <button class="primary">Add</button>
+  </form>
+  <h3>Party objectives</h3><ul id="party"></ul>
+  <div id="privsection"><h3 id="privhead">My private objectives</h3><ul id="priv"></ul></div>
+</section>
+
+<script type="module">
+// false: anyone can read; logging in is only needed to write; no private objectives.
+// true:  nothing shows until you log in, and private objectives turn on.
+// Switching it? Also paste the matching rules into Firestore (firestore.rules / firestore.login.rules).
+const requireLogin = false
+
+// Fill in from Firebase console → Project settings → Your apps → Web app. These values are public by design;
+// the Firestore rules are what protect the data.
+const firebaseConfig = {
+  apiKey: "REPLACE_ME",
+  authDomain: "REPLACE_ME.firebaseapp.com",
+  projectId: "REPLACE_ME",
+  appId: "REPLACE_ME",
+}
+
+// Usernames are Firebase email/password accounts under a made-up domain; nothing is ever emailed.
+const USER_DOMAIN = "party.local"
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"
+import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"
+
+const $ = (id) => document.getElementById(id)
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e }
+const when = (ts) => ts?.toDate ? ts.toDate().toLocaleString() : "just now"
+const view = location.hash.slice(1) === "objectives" ? "objectives" : "notes"
+
+// Match the wiki's theme and grow the iframe to fit its content.
+const themeVars = ["light", "lightgray", "gray", "darkgray", "dark", "secondary", "tertiary", "highlight", "bodyFont", "headerFont"]
+function syncTheme() {
+  try {
+    const cs = getComputedStyle(parent.document.documentElement)
+    for (const v of themeVars) { const x = cs.getPropertyValue("--" + v); if (x) document.documentElement.style.setProperty("--" + v, x) }
+  } catch {}
+}
+syncTheme()
+try {
+  parent.document.addEventListener("themechange", syncTheme)
+  parent.document.querySelectorAll('link[rel=stylesheet][href*="fonts.googleapis"]').forEach((l) => document.head.append(l.cloneNode()))
+} catch {}
+new ResizeObserver(() => { if (window.frameElement) frameElement.style.height = document.body.scrollHeight + 4 + "px" }).observe(document.body)
+
+const app = initializeApp(firebaseConfig)
+const auth = getAuth(app)
+const db = getFirestore(app)
+let me = null // { uid, name, gm } when logged in as a party member; null means read-only
+let unsubs = []
+
+$("login").onsubmit = (e) => {
+  e.preventDefault()
+  $("lmsg").textContent = "Logging in…"
+  const email = `${$("luser").value.trim().toLowerCase()}@${USER_DOMAIN}`
+  signInWithEmailAndPassword(auth, email, $("lpass").value)
+    .then(() => { $("lpass").value = ""; $("lmsg").textContent = "" })
+    .catch(() => { $("lmsg").textContent = "Wrong username or password." })
+}
+$("signout").onclick = () => signOut(auth)
+
+onAuthStateChanged(auth, async (user) => {
+  unsubs.forEach((u) => u()); unsubs = []
+  me = null
+  if (user) {
+    const m = await getDoc(doc(db, "members", user.email.toLowerCase())).catch(() => null)
+    const username = user.email.split("@")[0]
+    if (m?.exists()) me = { uid: user.uid, name: m.data().name || username, gm: m.data().gm === true }
+    $("who").textContent = me ? `Logged in as ${me.name}${me.gm ? " (GM)" : ""}` : `${username} isn't on the party list. Ask your GM.`
+  }
+  $("login").hidden = !!user
+  $("whobar").hidden = !user
+  const canSee = !requireLogin || !!me
+  $("notes").hidden = view !== "notes" || !canSee
+  $("objectives").hidden = view !== "objectives" || !canSee
+  if (!canSee) return
+  view === "notes" ? startNotes() : startObjectives()
+})
+
+// ---------- Notes: everyone reads all; author or GM edits ----------
+let notes = [], openId = null, saveTimer = null
+
+function startNotes() {
+  $("newnote").hidden = !me
+  closeNote()
+  unsubs.push(onSnapshot(collection(db, "notes"), (snap) => {
+    notes = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.updated?.toMillis?.() ?? Infinity) - (a.updated?.toMillis?.() ?? Infinity))
+    renderNoteList()
+  }))
+}
+
+function renderNoteList() {
+  const ul = $("notelist"); ul.replaceChildren()
+  if (!notes.length) ul.append(el("li", "muted", "No notes yet."))
+  for (const n of notes) {
+    const li = el("li", "note" + (n.id === openId ? " sel" : ""))
+    li.append(el("div", null, n.title || "Untitled"), el("div", "muted", `${n.authorName} · ${when(n.updated)}`))
+    li.onclick = () => openNote(n.id)
+    ul.append(li)
+  }
+}
+
+function openNote(id) {
+  flushSave()
+  const n = notes.find((x) => x.id === id); if (!n) return
+  openId = id
+  const canEdit = !!me && (n.author === me.uid || me.gm)
+  $("editor").hidden = false; $("edit").hidden = !canEdit; $("view").hidden = canEdit
+  if (canEdit) {
+    $("ntitle").value = n.title || ""; $("nbody").value = n.body || ""
+    $("nstatus").textContent = `${n.authorName} · saved ${when(n.updated)}`
+    $("nbody").focus()
+  } else {
+    $("vtitle").textContent = n.title || "Untitled"; $("vbody").textContent = n.body || ""
+    $("vmeta").textContent = `${n.authorName} · ${when(n.updated)}`
+  }
+  renderNoteList()
+}
+
+function closeNote() { flushSave(); openId = null; $("editor").hidden = true; renderNoteList() }
+
+function queueSave() { $("nstatus").textContent = "Saving…"; clearTimeout(saveTimer); saveTimer = setTimeout(flushSave, 800) }
+function flushSave() {
+  if (!saveTimer || !openId) return
+  clearTimeout(saveTimer); saveTimer = null
+  updateDoc(doc(db, "notes", openId), { title: $("ntitle").value, body: $("nbody").value, updated: serverTimestamp() })
+    .then(() => { $("nstatus").textContent = "Saved" })
+    .catch((e) => { $("nstatus").textContent = "Save failed: " + e.message })
+}
+addEventListener("pagehide", flushSave)
+
+$("ntitle").oninput = $("nbody").oninput = queueSave
+$("nclose").onclick = $("vclose").onclick = closeNote
+$("newnote").onclick = async () => {
+  const ref = await addDoc(collection(db, "notes"), { title: "", body: "", author: me.uid, authorName: me.name, updated: serverTimestamp() })
+  notes.unshift({ id: ref.id, title: "", body: "", author: me.uid, authorName: me.name })
+  openNote(ref.id)
+}
+$("ndelete").onclick = async () => {
+  if (!openId || !confirm("Delete this note for everyone?")) return
+  clearTimeout(saveTimer); saveTimer = null
+  await deleteDoc(doc(db, "notes", openId)); closeNote()
+}
+
+// ---------- Objectives: party-wide; private ones (owner + GM only) when requireLogin is on ----------
+const objs = new Map()
+
+function startObjectives() {
+  objs.clear(); renderObjs()
+  $("addobj").hidden = !me
+  $("oprivlabel").hidden = $("privsection").hidden = !requireLogin
+  $("privhead").textContent = me?.gm ? "Private objectives (all players)" : "My private objectives"
+  const onSnap = (snap) => { snap.docChanges().forEach((c) => c.type === "removed" ? objs.delete(c.doc.id) : objs.set(c.doc.id, { id: c.doc.id, ...c.doc.data() })); renderObjs() }
+  // Firestore queries must match the rules, so non-GMs fetch the visible slices separately.
+  const col = collection(db, "objectives")
+  if (me?.gm) unsubs.push(onSnapshot(col, onSnap))
+  else {
+    unsubs.push(onSnapshot(query(col, where("private", "==", false)), onSnap))
+    if (me && requireLogin) unsubs.push(onSnapshot(query(col, where("owner", "==", me.uid)), onSnap))
+  }
+}
+
+function renderObjs() {
+  const sorted = [...objs.values()].sort((a, b) => a.done - b.done || (a.created?.toMillis?.() ?? Infinity) - (b.created?.toMillis?.() ?? Infinity))
+  for (const [ulId, priv] of [["party", false], ["priv", true]]) {
+    const ul = $(ulId); ul.replaceChildren()
+    const items = sorted.filter((o) => o.private === priv)
+    if (!items.length) ul.append(el("li", "muted", "Nothing here yet."))
+    for (const o of items) {
+      const li = el("li", "obj" + (o.done ? " done" : ""))
+      const cb = el("input"); cb.type = "checkbox"; cb.checked = !!o.done; cb.disabled = !me
+      cb.onchange = () => updateDoc(doc(db, "objectives", o.id), { done: cb.checked })
+      li.append(cb, el("span", "t", o.text), el("span", "muted", o.ownerName))
+      if (me && (o.owner === me.uid || me.gm)) {
+        const x = el("button", "x", "✕"); x.title = "Delete"
+        x.onclick = () => confirm("Delete this objective?") && deleteDoc(doc(db, "objectives", o.id))
+        li.append(x)
+      }
+      ul.append(li)
+    }
+  }
+}
+
+$("addobj").onsubmit = (e) => {
+  e.preventDefault()
+  const text = $("otext").value.trim(); if (!text) return
+  addDoc(collection(db, "objectives"), { text, done: false, private: requireLogin && $("opriv").checked, owner: me.uid, ownerName: me.name, created: serverTimestamp() })
+  $("otext").value = ""
+}
+</script>
+</body>
+</html>
