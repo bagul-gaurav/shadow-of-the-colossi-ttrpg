@@ -118,6 +118,8 @@ const $ = (id) => document.getElementById(id)
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e }
 const when = (ts) => ts?.toDate ? ts.toDate().toLocaleString() : "just now"
 const view = location.hash.slice(1) === "objectives" ? "objectives" : "notes"
+// Quartz's in-site navigation only changes this iframe's #hash between pages, which doesn't reload it.
+addEventListener("hashchange", () => location.reload())
 
 // Match the wiki's theme and grow the iframe to fit its content.
 const themeVars = ["light", "lightgray", "gray", "darkgray", "dark", "secondary", "tertiary", "highlight", "bodyFont", "headerFont"]
