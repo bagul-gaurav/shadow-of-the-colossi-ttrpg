@@ -13,7 +13,8 @@
   * { box-sizing: border-box; }
   body { margin: 0; padding: 2px; background: var(--light); color: var(--darkgray); font: 1rem/1.5 var(--bodyFont); }
   h3 { font-family: var(--headerFont); color: var(--dark); margin: 1.25rem 0 .5rem; }
-  button, input, textarea { font: inherit; color: inherit; }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  select { background: var(--light); border: 1px solid var(--lightgray); border-radius: 6px; padding: .3rem .4rem; max-width: 12rem; }
   button { background: var(--highlight); border: 1px solid var(--lightgray); border-radius: 6px; padding: .3rem .8rem; cursor: pointer; }
   button:hover { border-color: var(--secondary); color: var(--secondary); }
   button.primary { background: var(--secondary); color: var(--light); border-color: var(--secondary); }
@@ -48,7 +49,8 @@
 </head>
 <body>
 <form class="bar" id="login" hidden>
-  <input type="text" id="luser" placeholder="Username" autocomplete="username" required style="flex:1;min-width:8rem;width:auto" />
+  <select id="luser" required style="flex:1;min-width:8rem;max-width:none"></select>
+  <input type="text" id="lusertext" placeholder="Username" autocomplete="username" hidden style="flex:1;min-width:8rem;width:auto" />
   <input type="password" id="lpass" placeholder="Password" autocomplete="current-password" required style="flex:1;min-width:8rem;width:auto" />
   <button class="primary">Log in</button>
   <span class="muted" id="lmsg" style="flex-basis:100%"></span>
@@ -56,7 +58,7 @@
 <div class="bar" id="whobar" hidden><span class="grow muted" id="who"></span><button id="signout">Log out</button></div>
 
 <section id="notes" hidden>
-  <div class="bar"><h3 class="grow">Party notes</h3><button class="primary" id="newnote" hidden>New note</button></div>
+  <div class="bar"><h3 class="grow">Party notes</h3><select id="nfilter" aria-label="Show notes by"></select><button class="primary" id="newnote" hidden>New note</button></div>
   <div class="card" id="editor" hidden>
     <div id="edit">
       <input type="text" id="ntitle" placeholder="Title" />
@@ -74,10 +76,12 @@
 <section id="objectives" hidden>
   <form class="bar" id="addobj" hidden>
     <input type="text" id="otext" placeholder="New objective" required maxlength="500" style="flex:1;width:auto" />
+    <select id="oassign" aria-label="Assign to"></select>
     <label id="oprivlabel"><input type="checkbox" id="opriv" /> Private</label>
     <button class="primary">Add</button>
   </form>
-  <h3>Party objectives</h3><ul id="party"></ul>
+  <div class="bar"><h3 class="grow">Party objectives</h3><select id="ofilter" aria-label="Show objectives for"></select></div>
+  <ul id="party"></ul>
   <div id="privsection"><h3 id="privhead">My private objectives</h3><ul id="priv"></ul></div>
 </section>
 
@@ -101,7 +105,7 @@ const USER_DOMAIN = "party.local"
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"
-import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"
 import { marked } from "https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js"
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.es.mjs"
 
@@ -133,13 +137,31 @@ new ResizeObserver(() => { if (window.frameElement) frameElement.style.height = 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const db = getFirestore(app)
-let me = null // { uid, name, gm } when logged in as a party member; null means read-only
+let me = null // { uid, user, name, gm } when logged in as a party member; null means read-only
 let unsubs = []
+
+// Party list from members/{user@party.local}; drives the login, filter and assignee dropdowns.
+const players = await getDocs(collection(db, "members"))
+  .then((s) => s.docs.map((d) => ({ user: d.id.split("@")[0], name: d.data().name || d.id.split("@")[0] })).sort((a, b) => a.name.localeCompare(b.name)))
+  .catch(() => [])
+const playerName = (user) => players.find((p) => p.user === user)?.name
+function fillPlayers(sel, firstLabel, value = "") {
+  sel.replaceChildren(new Option(firstLabel, ""), ...players.map((p) => new Option(p.name, p.user)))
+  sel.value = value || ""
+  return sel
+}
+
+fillPlayers($("luser"), "Choose your name")
+if (!players.length) { $("luser").hidden = true; $("luser").required = false; $("lusertext").hidden = false; $("lusertext").required = true }
+fillPlayers($("nfilter"), "All players").onchange = () => renderNoteList()
+fillPlayers($("ofilter"), "Everyone").onchange = () => renderObjs()
+fillPlayers($("oassign"), "Whole party")
 
 $("login").onsubmit = (e) => {
   e.preventDefault()
   $("lmsg").textContent = "Logging in…"
-  const email = `${$("luser").value.trim().toLowerCase()}@${USER_DOMAIN}`
+  const username = players.length ? $("luser").value : $("lusertext").value
+  const email = `${username.trim().toLowerCase()}@${USER_DOMAIN}`
   signInWithEmailAndPassword(auth, email, $("lpass").value)
     .then(() => { $("lpass").value = ""; $("lmsg").textContent = "" })
     .catch(() => { $("lmsg").textContent = "Wrong username or password." })
@@ -152,7 +174,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     const m = await getDoc(doc(db, "members", user.email.toLowerCase())).catch(() => null)
     const username = user.email.split("@")[0]
-    if (m?.exists()) me = { uid: user.uid, name: m.data().name || username, gm: m.data().gm === true }
+    if (m?.exists()) me = { uid: user.uid, user: username, name: m.data().name || username, gm: m.data().gm === true }
     $("who").textContent = me ? `Logged in as ${me.name}${me.gm ? " (GM)" : ""}` : `${username} isn't on the party list. Ask your GM.`
   }
   $("login").hidden = !!user
@@ -179,8 +201,10 @@ function startNotes() {
 
 function renderNoteList() {
   const ul = $("notelist"); ul.replaceChildren()
-  if (!notes.length) ul.append(el("li", "muted", "No notes yet."))
-  for (const n of notes) {
+  const only = playerName($("nfilter").value)
+  const shown = only ? notes.filter((n) => n.authorName === only) : notes
+  if (!shown.length) ul.append(el("li", "muted", "No notes yet."))
+  for (const n of shown) {
     const li = el("li", "note" + (n.id === openId ? " sel" : ""))
     li.append(el("div", null, n.title || "Untitled"), el("div", "muted", `${n.authorName} · ${when(n.updated)}`))
     li.onclick = () => openNote(n.id)
@@ -259,7 +283,11 @@ function startObjectives() {
 }
 
 function renderObjs() {
-  const sorted = [...objs.values()].sort((a, b) => a.done - b.done || (a.created?.toMillis?.() ?? Infinity) - (b.created?.toMillis?.() ?? Infinity))
+  // Filtering by a player shows objectives they added or are assigned to.
+  const fUser = $("ofilter").value, fName = playerName(fUser)
+  const sorted = [...objs.values()]
+    .filter((o) => !fUser || o.assignee === fUser || o.ownerName === fName)
+    .sort((a, b) => a.done - b.done || (a.created?.toMillis?.() ?? Infinity) - (b.created?.toMillis?.() ?? Infinity))
   for (const [ulId, priv] of [["party", false], ["priv", true]]) {
     const ul = $(ulId); ul.replaceChildren()
     const items = sorted.filter((o) => o.private === priv)
@@ -268,7 +296,12 @@ function renderObjs() {
       const li = el("li", "obj" + (o.done ? " done" : ""))
       const cb = el("input"); cb.type = "checkbox"; cb.checked = !!o.done; cb.disabled = !me
       cb.onchange = () => updateDoc(doc(db, "objectives", o.id), { done: cb.checked })
-      li.append(cb, el("span", "t", o.text), el("span", "muted", o.ownerName))
+      let assignee
+      if (me) {
+        assignee = fillPlayers(el("select"), "Whole party", o.assignee); assignee.setAttribute("aria-label", "Assigned to")
+        assignee.onchange = () => updateDoc(doc(db, "objectives", o.id), { assignee: assignee.value || null, assigneeName: playerName(assignee.value) || null })
+      } else assignee = el("span", "muted", o.assigneeName || "Whole party")
+      li.append(cb, el("span", "t", o.text), assignee, el("span", "muted", `by ${o.ownerName}`))
       if (me && (o.owner === me.uid || me.gm)) {
         const x = el("button", "x", "✕"); x.title = "Delete"
         x.onclick = () => confirm("Delete this objective?") && deleteDoc(doc(db, "objectives", o.id))
@@ -282,8 +315,12 @@ function renderObjs() {
 $("addobj").onsubmit = (e) => {
   e.preventDefault()
   const text = $("otext").value.trim(); if (!text) return
-  addDoc(collection(db, "objectives"), { text, done: false, private: requireLogin && $("opriv").checked, owner: me.uid, ownerName: me.name, created: serverTimestamp() })
-  $("otext").value = ""
+  const assignee = $("oassign").value || null
+  addDoc(collection(db, "objectives"), {
+    text, done: false, private: requireLogin && $("opriv").checked, owner: me.uid, ownerName: me.name,
+    assignee, assigneeName: playerName(assignee) || null, created: serverTimestamp(),
+  })
+  $("otext").value = ""; $("oassign").value = ""
 }
 </script>
 </body>
