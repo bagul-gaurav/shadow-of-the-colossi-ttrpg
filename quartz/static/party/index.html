@@ -30,7 +30,18 @@
   li.obj { display: flex; gap: .5rem; align-items: baseline; padding: .35rem 0; border-bottom: 1px solid var(--lightgray); }
   li.obj .t { flex: 1; overflow-wrap: anywhere; }
   li.obj.done .t { text-decoration: line-through; color: var(--gray); }
-  .read { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .read { overflow-wrap: anywhere; }
+  .read ul { list-style: disc; padding-left: 1.5rem; }
+  .read ol { padding-left: 1.5rem; }
+  .read a { color: var(--secondary); }
+  .read h1, .read h2, .read h3, .read h4 { font-family: var(--headerFont); color: var(--dark); margin: 1rem 0 .4rem; }
+  .read code { background: var(--highlight); padding: 0 .25rem; border-radius: 4px; font-size: .9em; }
+  .read pre { background: var(--highlight); padding: .5rem; border-radius: 6px; overflow-x: auto; }
+  .read pre code { background: none; padding: 0; }
+  .read blockquote { margin: .5rem 0; padding-left: .75rem; border-left: 3px solid var(--tertiary); color: var(--gray); }
+  .read img { max-width: 100%; }
+  .read table { border-collapse: collapse; }
+  .read th, .read td { border: 1px solid var(--lightgray); padding: .2rem .5rem; }
   .x { background: none; border: 0; color: var(--gray); padding: 0 .3rem; }
   [hidden] { display: none !important; }
 </style>
@@ -49,12 +60,12 @@
   <div class="card" id="editor" hidden>
     <div id="edit">
       <input type="text" id="ntitle" placeholder="Title" />
-      <p><textarea id="nbody" placeholder="Write your notes…"></textarea></p>
-      <div class="bar"><span class="grow muted" id="nstatus"></span><button id="ndelete">Delete</button><button id="nclose">Close</button></div>
+      <p><textarea id="nbody" placeholder="Write your notes… Markdown works: **bold**, *italic*, # heading, - list, [link](https://…)"></textarea></p>
+      <div class="bar"><button id="ndelete">Delete</button><span class="grow muted" id="nstatus"></span><button class="primary" id="nsave">Save</button><button id="nclose">Close</button></div>
     </div>
     <div id="view">
       <h3 id="vtitle"></h3><div class="read" id="vbody"></div>
-      <div class="bar"><span class="grow muted" id="vmeta"></span><button id="vclose">Close</button></div>
+      <div class="bar"><span class="grow muted" id="vmeta"></span><button id="vedit" hidden>Edit</button><button id="vclose">Close</button></div>
     </div>
   </div>
   <ul id="notelist"></ul>
@@ -91,6 +102,13 @@ const USER_DOMAIN = "party.local"
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"
 import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"
+import { marked } from "https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js"
+import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.es.mjs"
+
+// Notes are written by other players, so rendered markdown is always sanitized.
+marked.setOptions({ breaks: true }) // single newlines break lines, like the wiki
+DOMPurify.addHook("afterSanitizeAttributes", (n) => { if (n.tagName === "A") { n.target = "_blank"; n.rel = "noopener" } })
+const renderMd = (md) => DOMPurify.sanitize(marked.parse(md || ""), { RETURN_DOM_FRAGMENT: true })
 
 const $ = (id) => document.getElementById(id)
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e }
@@ -170,19 +188,22 @@ function renderNoteList() {
   }
 }
 
-function openNote(id) {
+// Notes open formatted; the author (or GM) can switch to the markdown editor.
+function openNote(id, edit = false) {
   flushSave()
   const n = notes.find((x) => x.id === id); if (!n) return
   openId = id
   const canEdit = !!me && (n.author === me.uid || me.gm)
-  $("editor").hidden = false; $("edit").hidden = !canEdit; $("view").hidden = canEdit
-  if (canEdit) {
+  const editing = canEdit && edit
+  $("editor").hidden = false; $("edit").hidden = !editing; $("view").hidden = editing
+  if (editing) {
     $("ntitle").value = n.title || ""; $("nbody").value = n.body || ""
     $("nstatus").textContent = `${n.authorName} · saved ${when(n.updated)}`
     $("nbody").focus()
   } else {
-    $("vtitle").textContent = n.title || "Untitled"; $("vbody").textContent = n.body || ""
+    $("vtitle").textContent = n.title || "Untitled"; $("vbody").replaceChildren(renderMd(n.body))
     $("vmeta").textContent = `${n.authorName} · ${when(n.updated)}`
+    $("vedit").hidden = !canEdit
   }
   renderNoteList()
 }
@@ -190,8 +211,8 @@ function openNote(id) {
 function closeNote() { flushSave(); openId = null; $("editor").hidden = true; renderNoteList() }
 
 function queueSave() { $("nstatus").textContent = "Saving…"; clearTimeout(saveTimer); saveTimer = setTimeout(flushSave, 800) }
-function flushSave() {
-  if (!saveTimer || !openId) return
+function flushSave(force = false) {
+  if ((!saveTimer && !force) || !openId) return
   clearTimeout(saveTimer); saveTimer = null
   updateDoc(doc(db, "notes", openId), { title: $("ntitle").value, body: $("nbody").value, updated: serverTimestamp() })
     .then(() => { $("nstatus").textContent = "Saved" })
@@ -201,10 +222,17 @@ addEventListener("pagehide", flushSave)
 
 $("ntitle").oninput = $("nbody").oninput = queueSave
 $("nclose").onclick = $("vclose").onclick = closeNote
+$("vedit").onclick = () => openNote(openId, true)
+$("nsave").onclick = () => {
+  const n = notes.find((x) => x.id === openId)
+  if (n) Object.assign(n, { title: $("ntitle").value, body: $("nbody").value })
+  flushSave(true)
+  openNote(openId)
+}
 $("newnote").onclick = async () => {
   const ref = await addDoc(collection(db, "notes"), { title: "", body: "", author: me.uid, authorName: me.name, updated: serverTimestamp() })
   notes.unshift({ id: ref.id, title: "", body: "", author: me.uid, authorName: me.name })
-  openNote(ref.id)
+  openNote(ref.id, true)
 }
 $("ndelete").onclick = async () => {
   if (!openId || !confirm("Delete this note for everyone?")) return
