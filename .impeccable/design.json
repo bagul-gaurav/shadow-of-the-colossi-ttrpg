@@ -1,0 +1,622 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-29T06:50:17.383Z",
+  "title": "Design System: Survey of Ecerah",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Survey Ground",
+        "canonical": "#eef2ee",
+        "tonalRamp": [
+          "#212b21",
+          "#394b39",
+          "#526b52",
+          "#6a8b6a",
+          "#89a489",
+          "#a8bda8",
+          "#cbd7cb",
+          "#f1f4f1"
+        ]
+      },
+      "ground-2": {
+        "role": "neutral",
+        "displayName": "Survey Ground, Wash",
+        "canonical": "#e2e9e4",
+        "tonalRamp": [
+          "#212b24",
+          "#394b3e",
+          "#516b59",
+          "#6a8b73",
+          "#88a590",
+          "#a8bdae",
+          "#cbd7ce",
+          "#f1f4f2"
+        ]
+      },
+      "ground-3": {
+        "role": "neutral",
+        "displayName": "Survey Ground, Deep Fill",
+        "canonical": "#d6dfd9",
+        "tonalRamp": [
+          "#222b25",
+          "#3a4a40",
+          "#536a5a",
+          "#6b8975",
+          "#8aa392",
+          "#a9bcaf",
+          "#cbd7cf",
+          "#f1f4f2"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Surveyor's Ink",
+        "canonical": "#1c2327",
+        "tonalRamp": [
+          "#20282d",
+          "#37454d",
+          "#4f636e",
+          "#66808e",
+          "#859ba8",
+          "#a6b6bf",
+          "#cad3d9",
+          "#f0f3f4"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Surveyor's Ink, Secondary",
+        "canonical": "#48534e",
+        "tonalRamp": [
+          "#242926",
+          "#3e4743",
+          "#58655f",
+          "#72837b",
+          "#8f9e97",
+          "#adb8b3",
+          "#ced4d1",
+          "#f1f3f2"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Surveyor's Ink, Quiet",
+        "canonical": "#58625e",
+        "tonalRamp": [
+          "#242827",
+          "#3f4643",
+          "#59635f",
+          "#74817c",
+          "#919c98",
+          "#aeb7b3",
+          "#cfd4d2",
+          "#f2f3f2"
+        ]
+      },
+      "terrain": {
+        "role": "tertiary",
+        "displayName": "Contour Brown",
+        "canonical": "#8a5129",
+        "tonalRamp": [
+          "#3b2312",
+          "#663c1e",
+          "#91552b",
+          "#bd6f38",
+          "#cf8d5e",
+          "#dcab89",
+          "#eacdb8",
+          "#f9f1eb"
+        ]
+      },
+      "contour": {
+        "role": "tertiary",
+        "displayName": "Contour Line",
+        "canonical": "rgba(138, 81, 41, .30)"
+      },
+      "hydro": {
+        "role": "secondary",
+        "displayName": "Hydro Blue",
+        "canonical": "#1d5a85",
+        "tonalRamp": [
+          "#0e2b3f",
+          "#184a6d",
+          "#22699b",
+          "#2c88c9",
+          "#53a2da",
+          "#81bbe4",
+          "#b4d6ef",
+          "#eaf4fa"
+        ]
+      },
+      "hydro-tint": {
+        "role": "secondary",
+        "displayName": "Hydro Tint",
+        "canonical": "rgba(29, 90, 133, .10)"
+      },
+      "overprint": {
+        "role": "primary",
+        "displayName": "Overprint Magenta",
+        "canonical": "#a8215f",
+        "tonalRamp": [
+          "#400d24",
+          "#6f163f",
+          "#9e1f59",
+          "#cd2874",
+          "#dd5091",
+          "#e67fae",
+          "#f0b2cf",
+          "#fbeaf2"
+        ]
+      },
+      "on-overprint": {
+        "role": "primary",
+        "displayName": "On Overprint",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#5e5e5e",
+          "#7a7a7a",
+          "#969696",
+          "#b3b3b3",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "danger": {
+        "role": "error",
+        "displayName": "Danger",
+        "canonical": "#a3312a",
+        "tonalRamp": [
+          "#3d1210",
+          "#69201b",
+          "#962d27",
+          "#c33b32",
+          "#d46059",
+          "#e08b85",
+          "#ecb9b6",
+          "#faeceb"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline Rule",
+        "canonical": "#b7c2bb",
+        "tonalRamp": [
+          "#232925",
+          "#3d4841",
+          "#57665c",
+          "#708578",
+          "#8e9f94",
+          "#acb9b1",
+          "#cdd5d0",
+          "#f1f3f2"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Rule",
+        "canonical": "#1c2327",
+        "tonalRamp": [
+          "#20282d",
+          "#37454d",
+          "#4f636e",
+          "#66808e",
+          "#859ba8",
+          "#a6b6bf",
+          "#cad3d9",
+          "#f0f3f4"
+        ]
+      },
+      "night-ground": {
+        "role": "neutral",
+        "displayName": "Night Survey Ground",
+        "canonical": "#131a1e",
+        "tonalRamp": [
+          "#1e292f",
+          "#334651",
+          "#496474",
+          "#5f8296",
+          "#7f9dae",
+          "#a1b7c4",
+          "#c7d4db",
+          "#eff3f5"
+        ]
+      },
+      "night-ground-2": {
+        "role": "neutral",
+        "displayName": "Night Survey Ground, Wash",
+        "canonical": "#1a2328",
+        "tonalRamp": [
+          "#1e292e",
+          "#344650",
+          "#4a6472",
+          "#608294",
+          "#809dad",
+          "#a2b7c3",
+          "#c7d4db",
+          "#f0f3f5"
+        ]
+      },
+      "night-ground-3": {
+        "role": "neutral",
+        "displayName": "Night Survey Ground, Deep Fill",
+        "canonical": "#243037",
+        "tonalRamp": [
+          "#1e282e",
+          "#344650",
+          "#4b6472",
+          "#618194",
+          "#819cac",
+          "#a3b7c2",
+          "#c8d4db",
+          "#f0f3f5"
+        ]
+      },
+      "night-ink": {
+        "role": "neutral",
+        "displayName": "Night Surveyor's Ink",
+        "canonical": "#e4ebe7",
+        "tonalRamp": [
+          "#212c25",
+          "#384c41",
+          "#506c5c",
+          "#688d78",
+          "#87a694",
+          "#a7beb1",
+          "#cad8d0",
+          "#f0f4f2"
+        ]
+      },
+      "night-ink-2": {
+        "role": "neutral",
+        "displayName": "Night Surveyor's Ink, Secondary",
+        "canonical": "#aab7b1",
+        "tonalRamp": [
+          "#232926",
+          "#3d4843",
+          "#57665f",
+          "#70857b",
+          "#8e9f97",
+          "#acb9b3",
+          "#cdd5d1",
+          "#f1f3f2"
+        ]
+      },
+      "night-ink-3": {
+        "role": "neutral",
+        "displayName": "Night Surveyor's Ink, Quiet",
+        "canonical": "#85938d",
+        "tonalRamp": [
+          "#242927",
+          "#3e4643",
+          "#59645f",
+          "#73827b",
+          "#909d97",
+          "#aeb7b3",
+          "#ced4d1",
+          "#f1f3f2"
+        ]
+      },
+      "night-terrain": {
+        "role": "tertiary",
+        "displayName": "Night Contour Brown",
+        "canonical": "#d49b6b",
+        "tonalRamp": [
+          "#3b2411",
+          "#673f1e",
+          "#925a2a",
+          "#be7537",
+          "#d0925d",
+          "#ddaf88",
+          "#eacfb8",
+          "#f9f2eb"
+        ]
+      },
+      "night-contour": {
+        "role": "tertiary",
+        "displayName": "Night Contour Line",
+        "canonical": "rgba(212, 155, 107, .20)"
+      },
+      "night-hydro": {
+        "role": "secondary",
+        "displayName": "Night Hydro Blue",
+        "canonical": "#86bde3",
+        "tonalRamp": [
+          "#0e2b3e",
+          "#194a6c",
+          "#236999",
+          "#2e88c7",
+          "#55a2d8",
+          "#83bbe2",
+          "#b4d6ee",
+          "#eaf4fa"
+        ]
+      },
+      "night-hydro-tint": {
+        "role": "secondary",
+        "displayName": "Night Hydro Tint",
+        "canonical": "rgba(134, 189, 227, .12)"
+      },
+      "night-overprint": {
+        "role": "primary",
+        "displayName": "Night Overprint Magenta",
+        "canonical": "#e5609f",
+        "tonalRamp": [
+          "#420b25",
+          "#721340",
+          "#a21b5b",
+          "#d22276",
+          "#e24b92",
+          "#e97cb0",
+          "#f2b0cf",
+          "#fbe9f2"
+        ]
+      },
+      "night-on-overprint": {
+        "role": "primary",
+        "displayName": "Night On Overprint",
+        "canonical": "#1a0b12",
+        "tonalRamp": [
+          "#361725",
+          "#5d2741",
+          "#85385c",
+          "#ac4977",
+          "#c16c94",
+          "#d293b0",
+          "#e4bed0",
+          "#f7edf2"
+        ]
+      },
+      "night-danger": {
+        "role": "error",
+        "displayName": "Night Danger",
+        "canonical": "#f08b80",
+        "tonalRamp": [
+          "#440e08",
+          "#77180e",
+          "#a92314",
+          "#db2d1a",
+          "#e95444",
+          "#ef8276",
+          "#f5b4ad",
+          "#fceae8"
+        ]
+      },
+      "night-rule": {
+        "role": "neutral",
+        "displayName": "Night Hairline Rule",
+        "canonical": "#2e3b42",
+        "tonalRamp": [
+          "#1f282d",
+          "#36464e",
+          "#4e636f",
+          "#658190",
+          "#849ca9",
+          "#a5b7c0",
+          "#c9d4d9",
+          "#f0f3f5"
+        ]
+      },
+      "night-rule-strong": {
+        "role": "neutral",
+        "displayName": "Night Strong Rule",
+        "canonical": "#c9d3ce",
+        "tonalRamp": [
+          "#222a26",
+          "#3c4942",
+          "#55685e",
+          "#6e877a",
+          "#8ca196",
+          "#abbab3",
+          "#ccd6d1",
+          "#f1f4f2"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Sheet Title",
+        "purpose": "The title-block sheet name only; uppercase."
+      },
+      "headline": {
+        "displayName": "Entry Title",
+        "purpose": "Open entry title and editor title input; t-lg on phones."
+      },
+      "title": {
+        "displayName": "Prose Heading",
+        "purpose": "Markdown h1/h2 inside entries (t-lg / t-md)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Entry text (prose 1.65, max 68ch), row titles, inputs."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "Meta lines, statuses, player names, selects."
+      },
+      "label": {
+        "displayName": "Map Label",
+        "purpose": "Title-block field labels and list heads; uppercase, terrain."
+      },
+      "button": {
+        "displayName": "Button Lettering",
+        "purpose": "All buttons; uppercase."
+      },
+      "lettering": {
+        "displayName": "Map Lettering",
+        "purpose": "The Uncharted empty-state word only; uppercase, terrain."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.22, 1, .36, 1)",
+        "purpose": "The single easing curve for all transitions."
+      },
+      {
+        "name": "state",
+        "value": ".18s",
+        "purpose": "Colour, border and background transitions on buttons, fields and rows."
+      },
+      {
+        "name": "press",
+        "value": "transform .12s, scale(.98)",
+        "purpose": "Button press."
+      },
+      {
+        "name": "survey-mark-ink",
+        "value": "scaleY(0 to 1) .26s from the base; trig point opacity .14s after .14s delay",
+        "purpose": "Ticking a quest inks its survey mark. Signature motion."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "transition-duration: 0s",
+        "purpose": "prefers-reduced-motion removes all transitions."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "split",
+        "value": "640px",
+        "purpose": "At 640px+ the journal legend sits beside the note and the title block goes two-column; below, views stack and the compact phone title block applies."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Overprint Button",
+      "kind": "button",
+      "refersTo": "button-overprint",
+      "description": "The single primary action per view (New entry, Log in, Add quest).",
+      "html": "<button class=\"ds-btn ds-btn-over\">New entry</button>",
+      "css": ":host{--ground:#eef2ee;--ground-2:#e2e9e4;--ink:#1c2327;--ink-2:#48534e;--ink-3:#58625e;--terrain:#8a5129;--hydro:#1d5a85;--hydro-tint:rgba(29,90,133,.10);--overprint:#a8215f;--on-overprint:#fff;--rule:#b7c2bb;--rule-strong:#1c2327;--display:'Barlow Semi Condensed','Arial Narrow',sans-serif;--body:'Source Sans 3','Source Sans Pro',system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)} .ds-btn{display:inline-flex;align-items:center;min-height:2.75rem;padding:0 1.5rem;border:1px solid transparent;border-radius:3px;font:600 .875rem/1 var(--display);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background-color .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease),transform .12s var(--ease)} .ds-btn:active{transform:scale(.98)} .ds-btn:focus-visible{outline:2px solid var(--hydro);outline-offset:2px} .ds-btn-over{background:var(--overprint);color:var(--on-overprint)} .ds-btn-over:hover{background:color-mix(in srgb,var(--overprint) 86%,var(--ink))}"
+    },
+    {
+      "name": "Ink Button",
+      "kind": "button",
+      "refersTo": "button-ink",
+      "description": "Commits (Save).",
+      "html": "<button class=\"ds-btn ds-btn-ink\">Save</button>",
+      "css": ":host{--ground:#eef2ee;--ground-2:#e2e9e4;--ink:#1c2327;--ink-2:#48534e;--ink-3:#58625e;--terrain:#8a5129;--hydro:#1d5a85;--hydro-tint:rgba(29,90,133,.10);--overprint:#a8215f;--on-overprint:#fff;--rule:#b7c2bb;--rule-strong:#1c2327;--display:'Barlow Semi Condensed','Arial Narrow',sans-serif;--body:'Source Sans 3','Source Sans Pro',system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)} .ds-btn{display:inline-flex;align-items:center;min-height:2.75rem;padding:0 1.5rem;border:1px solid transparent;border-radius:3px;font:600 .875rem/1 var(--display);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background-color .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease),transform .12s var(--ease)} .ds-btn:active{transform:scale(.98)} .ds-btn:focus-visible{outline:2px solid var(--hydro);outline-offset:2px} .ds-btn-ink{background:var(--ink);color:var(--ground)} .ds-btn-ink:hover{background:color-mix(in srgb,var(--ink) 82%,var(--hydro))}"
+    },
+    {
+      "name": "Line Button",
+      "kind": "button",
+      "refersTo": "button-line",
+      "description": "Secondary action on a hairline border (Edit).",
+      "html": "<button class=\"ds-btn ds-btn-line\">Edit</button>",
+      "css": ":host{--ground:#eef2ee;--ground-2:#e2e9e4;--ink:#1c2327;--ink-2:#48534e;--ink-3:#58625e;--terrain:#8a5129;--hydro:#1d5a85;--hydro-tint:rgba(29,90,133,.10);--overprint:#a8215f;--on-overprint:#fff;--rule:#b7c2bb;--rule-strong:#1c2327;--display:'Barlow Semi Condensed','Arial Narrow',sans-serif;--body:'Source Sans 3','Source Sans Pro',system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)} .ds-btn{display:inline-flex;align-items:center;min-height:2.75rem;padding:0 1.5rem;border:1px solid transparent;border-radius:3px;font:600 .875rem/1 var(--display);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background-color .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease),transform .12s var(--ease)} .ds-btn:active{transform:scale(.98)} .ds-btn:focus-visible{outline:2px solid var(--hydro);outline-offset:2px} .ds-btn-line{background:transparent;border-color:var(--rule);color:var(--ink)} .ds-btn-line:hover{border-color:var(--ink-2)}"
+    },
+    {
+      "name": "Text Button",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "Quiet actions (Log out, Close, Back to legend).",
+      "html": "<button class=\"ds-btn ds-btn-text\">Close</button>",
+      "css": ":host{--ground:#eef2ee;--ground-2:#e2e9e4;--ink:#1c2327;--ink-2:#48534e;--ink-3:#58625e;--terrain:#8a5129;--hydro:#1d5a85;--hydro-tint:rgba(29,90,133,.10);--overprint:#a8215f;--on-overprint:#fff;--rule:#b7c2bb;--rule-strong:#1c2327;--display:'Barlow Semi Condensed','Arial Narrow',sans-serif;--body:'Source Sans 3','Source Sans Pro',system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)} .ds-btn{display:inline-flex;align-items:center;min-height:2.75rem;padding:0 1.5rem;border:1px solid transparent;border-radius:3px;font:600 .875rem/1 var(--display);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background-color .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease),transform .12s var(--ease)} .ds-btn:active{transform:scale(.98)} .ds-btn:focus-visible{outline:2px solid var(--hydro);outline-offset:2px} .ds-btn-text{background:none;border:0;padding:0 .5rem;color:var(--ink-2)} .ds-btn-text:hover{color:var(--ink)}"
+    },
+    {
+      "name": "Ruled Field",
+      "kind": "input",
+      "refersTo": "field-ruled",
+      "description": "Inputs are a single bottom rule, not a box.",
+      "html": "<input class=\"ds-field\" placeholder=\"Plot a new quest…\">",
+      "css": ":host{--ground:#eef2ee;--ground-2:#e2e9e4;--ink:#1c2327;--ink-2:#48534e;--ink-3:#58625e;--terrain:#8a5129;--hydro:#1d5a85;--hydro-tint:rgba(29,90,133,.10);--overprint:#a8215f;--on-overprint:#fff;--rule:#b7c2bb;--rule-strong:#1c2327;--display:'Barlow Semi Condensed','Arial Narrow',sans-serif;--body:'Source Sans 3','Source Sans Pro',system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)} .ds-field{width:100%;min-height:2.75rem;padding:.5rem .25rem;background:transparent;border:0;border-bottom:1px solid var(--rule-strong);border-radius:0;font:400 1rem/1.55 var(--body);color:var(--ink);caret-color:var(--overprint);transition:border-color .18s var(--ease),box-shadow .18s var(--ease)} .ds-field::placeholder{color:var(--ink-3)} .ds-field:hover{border-bottom-color:var(--hydro)} .ds-field:focus{outline:none;border-bottom-color:var(--hydro);box-shadow:0 1px 0 var(--hydro)}"
+    },
+    {
+      "name": "Plain Select",
+      "kind": "input",
+      "refersTo": "select-plain",
+      "description": "Hydro filter/assignee select with a masked SVG chevron.",
+      "html": "<span class=\"ds-sel\"><select><option>Everyone</option><option>Ilsa</option></select></span>",
+      "css": ":host{--ground:#eef2ee;--ground-2:#e2e9e4;--ink:#1c2327;--ink-2:#48534e;--ink-3:#58625e;--terrain:#8a5129;--hydro:#1d5a85;--hydro-tint:rgba(29,90,133,.10);--overprint:#a8215f;--on-overprint:#fff;--rule:#b7c2bb;--rule-strong:#1c2327;--display:'Barlow Semi Condensed','Arial Narrow',sans-serif;--body:'Source Sans 3','Source Sans Pro',system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)} .ds-sel{position:relative;display:inline-flex;color:var(--hydro)} .ds-sel select{appearance:none;-webkit-appearance:none;min-height:2.25rem;padding:.25rem 2rem .25rem .5rem;border:0;border-radius:3px;background:transparent;color:var(--hydro);font:400 .875rem/1.55 var(--body);cursor:pointer} .ds-sel select:hover{background:var(--ground-2)} .ds-sel select:focus-visible{outline:2px solid var(--hydro);outline-offset:2px} .ds-sel::after{content:'';position:absolute;right:.75rem;top:50%;width:.625rem;height:.625rem;margin-top:-.3125rem;pointer-events:none;background:currentColor;-webkit-mask:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 3l4 4 4-4' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E\") center/contain no-repeat;mask:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 3l4 4 4-4' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E\") center/contain no-repeat}"
+    },
+    {
+      "name": "Entry Legend Row",
+      "kind": "custom",
+      "refersTo": "entry-row",
+      "description": "Journal index row with a stable E-ref; the current row is hydro-tinted.",
+      "html": "<div class=\"ds-entries\"><button class=\"ds-entry\" aria-current=\"true\"><span class=\"ds-ref\">E-03</span><span class=\"ds-t\">The bridge at Harrow Fen</span><span class=\"ds-m\">Ilsa · 12 Sep</span></button><button class=\"ds-entry\"><span class=\"ds-ref\">E-02</span><span class=\"ds-t\">Camp under the fallen colossus</span><span class=\"ds-m\">Toren · 5 Sep</span></button></div>",
+      "css": ":host{--ground:#eef2ee;--ground-2:#e2e9e4;--ink:#1c2327;--ink-2:#48534e;--ink-3:#58625e;--terrain:#8a5129;--hydro:#1d5a85;--hydro-tint:rgba(29,90,133,.10);--overprint:#a8215f;--on-overprint:#fff;--rule:#b7c2bb;--rule-strong:#1c2327;--display:'Barlow Semi Condensed','Arial Narrow',sans-serif;--body:'Source Sans 3','Source Sans Pro',system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)} .ds-entries{background:var(--ground);border-top:1px solid var(--rule-strong)} .ds-entry{display:grid;grid-template-columns:3.25rem 1fr;gap:.25rem .75rem;width:100%;padding:1rem .75rem 1rem .5rem;text-align:left;background:none;border:0;border-bottom:1px solid var(--rule);font:400 1rem/1.55 var(--body);color:var(--ink);cursor:pointer;transition:background-color .18s var(--ease)} .ds-entry:hover{background:var(--ground-2)} .ds-entry:focus-visible{outline:2px solid var(--hydro);outline-offset:2px} .ds-entry[aria-current=true]{background:var(--hydro-tint)} .ds-ref{grid-row:span 2;padding-top:.125rem;font:600 .75rem/1.4 var(--display);letter-spacing:.08em;color:var(--terrain);font-variant-numeric:tabular-nums} .ds-entry[aria-current=true] .ds-ref{color:var(--hydro)} .ds-t{font-weight:600;line-height:1.3} .ds-m{font-size:.875rem;color:var(--ink-2)}"
+    },
+    {
+      "name": "Title-Block Label Grid",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Head of an open entry: labelled cells divided by hairlines.",
+      "html": "<div class=\"ds-nh\"><div><div class=\"ds-label\">Ref</div><div class=\"ds-v\">E-03</div></div><div><div class=\"ds-label\">Surveyor</div><div class=\"ds-v ds-party\">Ilsa</div></div><div><div class=\"ds-label\">Recorded</div><div class=\"ds-v\">12 Sep 2026</div></div></div>",
+      "css": ":host{--ground:#eef2ee;--ground-2:#e2e9e4;--ink:#1c2327;--ink-2:#48534e;--ink-3:#58625e;--terrain:#8a5129;--hydro:#1d5a85;--hydro-tint:rgba(29,90,133,.10);--overprint:#a8215f;--on-overprint:#fff;--rule:#b7c2bb;--rule-strong:#1c2327;--display:'Barlow Semi Condensed','Arial Narrow',sans-serif;--body:'Source Sans 3','Source Sans Pro',system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)} .ds-nh{display:grid;grid-template-columns:auto auto 1fr;border-top:1px solid var(--rule-strong);border-bottom:1px solid var(--rule);background:var(--ground)} .ds-nh>div{padding:.75rem 1rem .75rem 0;margin-right:1rem;border-right:1px solid var(--rule)} .ds-nh>div:last-child{border-right:0;margin-right:0} .ds-label{font:600 .75rem/1.2 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--terrain)} .ds-v{margin-top:.25rem;font:400 .875rem/1.55 var(--body);color:var(--ink);font-variant-numeric:tabular-nums} .ds-party{color:var(--hydro);font-weight:600;font-style:italic}"
+    },
+    {
+      "name": "Quest Ledger Row with Survey Mark",
+      "kind": "custom",
+      "refersTo": "quest-row",
+      "description": "Ruled quest row; ticking the triangle inks it from the base up.",
+      "html": "<div class=\"ds-quest\"><button class=\"ds-mark\" aria-pressed=\"false\" aria-label=\"Mark done\" onclick=\"this.setAttribute('aria-pressed', this.getAttribute('aria-pressed') !== 'true')\"><svg viewBox=\"0 0 22 22\" aria-hidden=\"true\"><path class=\"ds-ink\" d=\"M11 3.2 19.4 18.2H2.6Z\"/><path class=\"ds-edge\" d=\"M11 3.2 19.4 18.2H2.6Z\"/><circle class=\"ds-pt\" cx=\"11\" cy=\"13\" r=\"1.9\"/></svg></button><div><span>Find the sealed door of Vodarr</span><span class=\"ds-by\">Q-04 · Plotted by Ilsa</span></div><span class=\"ds-who\">Party</span></div>",
+      "css": ":host{--ground:#eef2ee;--ground-2:#e2e9e4;--ink:#1c2327;--ink-2:#48534e;--ink-3:#58625e;--terrain:#8a5129;--hydro:#1d5a85;--hydro-tint:rgba(29,90,133,.10);--overprint:#a8215f;--on-overprint:#fff;--rule:#b7c2bb;--rule-strong:#1c2327;--display:'Barlow Semi Condensed','Arial Narrow',sans-serif;--body:'Source Sans 3','Source Sans Pro',system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)} .ds-quest{display:grid;grid-template-columns:2.75rem 1fr auto;align-items:center;gap:0 .75rem;min-height:3.5rem;padding:.5rem 0;border-bottom:1px solid var(--rule);background:var(--ground);font:400 1rem/1.35 var(--body);color:var(--ink)} .ds-by{display:block;margin-top:.125rem;font-size:.875rem;color:var(--ink-3)} .ds-who{font-size:.875rem;color:var(--hydro)} .ds-mark{display:grid;place-items:center;width:2.75rem;height:2.75rem;background:none;border:0;border-radius:3px;cursor:pointer;color:var(--ink-2)} .ds-mark:hover{color:var(--ink);background:var(--ground-2)} .ds-mark:focus-visible{outline:2px solid var(--hydro);outline-offset:2px} .ds-mark svg{width:22px;height:22px;overflow:visible} .ds-edge{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round} .ds-ink{fill:var(--hydro);transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);transition:transform .26s var(--ease)} .ds-pt{fill:var(--ground);opacity:0;transition:opacity .14s var(--ease) .14s} .ds-mark[aria-pressed=true]{color:var(--hydro)} .ds-mark[aria-pressed=true] .ds-ink{transform:scaleY(1)} .ds-mark[aria-pressed=true] .ds-pt{opacity:1}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Survey of the Colossi",
+    "overview": "The party's record is a surveyor's sheet of Ecerah. Journal entries are field notes indexed in a map legend; quests are plotted survey marks in a ruled ledger. Everything is drawn the way a printed survey sheet is drawn: a pale grey-green ground, near-black ink, hairline rules instead of boxes, spaced condensed capitals for map lettering, and contour lines that fill empty ground. Colour is not decoration; each ink carries one meaning, the way map inks do.\n\nDensity is working-document density: rows are ruled, not carded; labels are small spaced caps; there is one magenta action per screen. By night the sheet becomes a night chart on deep slate, with every ink lifted to stay legible and every role preserved. The app has no theme toggle of its own; it reads the parent wiki's `saved-theme` attribute (and its `themechange` event), falling back to `prefers-color-scheme` only when the parent cannot be read.\n\nThe world rejects the notes-app sidebar and the SaaS checklist: no cards, no pills, no drop shadows, no checkbox ticks for quests.",
+    "keyCharacteristics": [
+      "Two themes, one role map: survey sheet (light) and night chart (dark).",
+      "One ink, one meaning: ink for text, terrain for meta and contours, hydro for the party and selection, overprint for the single primary action.",
+      "Hairline rules and a title-block label grid carry all structure.",
+      "Condensed spaced capitals (Barlow Semi Condensed) for lettering; Source Sans 3 for everything read.",
+      "Contours only in margins and empty ground; never behind reading text.",
+      "The signature motion: ticking a quest inks its survey mark from the base up."
+    ],
+    "rules": [
+      {
+        "name": "The One Ink, One Meaning Rule",
+        "body": "Every colour has a single job. Hydro means the party or the current selection; terrain means meta or terrain; overprint means the primary action. Never use one ink for another's job.",
+        "section": "colors"
+      },
+      {
+        "name": "The Single Overprint Rule",
+        "body": "At most one overprint button is visible per view. Committing (Save) uses ink, not overprint.",
+        "section": "colors"
+      },
+      {
+        "name": "The Night Chart Rule",
+        "body": "Dark mode is a parallel palette, not an inversion. Every light token has a night twin with the same role; set both when adding a role.",
+        "section": "colors"
+      },
+      {
+        "name": "The Lettering Rule",
+        "body": "Barlow Semi Condensed is for things printed on the map (titles, labels, refs, buttons). Anything a player writes or reads at length is Source Sans 3.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Refs Rule",
+        "body": "Refs, dates and the sheet subline use tabular numerals.",
+        "section": "typography"
+      },
+      {
+        "name": "The Printed Sheet Rule",
+        "body": "Nothing floats. Separate with rules and washes, never with shadows or cards.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** give every colour a single role and set its night twin when adding a role.",
+      "**Do** keep one overprint action per view; commit with ink.",
+      "**Do** separate with hairline rules (`rule`) and strong rules (`rule-strong`), not boxes.",
+      "**Do** set labels, refs and buttons in Barlow Semi Condensed 600 with tracking; set read and written text in Source Sans 3.",
+      "**Do** give every new list item a stable, zero-padded ref in its own prefix (E-, Q-), numbered by creation order.",
+      "**Do** fill empty ground with contours and the Uncharted lettering.",
+      "**Do** keep touch targets at 2.75rem and follow the parent wiki's theme."
+    ],
+    "donts": [
+      "**Don't** add shadows, cards or floating panels; the sheet is flat.",
+      "**Don't** draw contours behind reading text or on the phone title block.",
+      "**Don't** use overprint magenta for anything but the primary action, or danger as a fill.",
+      "**Don't** replace the survey mark with a checkbox or a glyph; marks and crosses are inline SVG.",
+      "**Don't** use spaced-caps labels as decorative eyebrows above headings; labels name a field or a list."
+    ]
+  }
+}
