@@ -1,93 +1,339 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Party</title>
+<title>Survey of Ecerah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap" />
 <style>
+  /* Survey sheet by day, night chart by dark. Each colour carries one rule:
+     ink = text, terrain = meta and contours, hydro = the party and selection, overprint = the one primary action. */
   :root {
-    --light: #faf8f8; --lightgray: #e5e5e5; --gray: #b8b8b8; --darkgray: #4e4e4e;
-    --dark: #2b2b2b; --secondary: #284b63; --tertiary: #84a59d;
-    --highlight: rgba(143,159,169,.15); --bodyFont: system-ui, sans-serif; --headerFont: var(--bodyFont);
+    --ground: #eef2ee; --ground-2: #e2e9e4; --ground-3: #d6dfd9;
+    --ink: #1c2327; --ink-2: #48534e; --ink-3: #58625e;
+    --terrain: #8a5129; --contour: rgba(138, 81, 41, .30);
+    --hydro: #1d5a85; --hydro-tint: rgba(29, 90, 133, .10);
+    --overprint: #a8215f; --on-overprint: #ffffff;
+    --danger: #a3312a;
+    --rule: #b7c2bb; --rule-strong: #1c2327;
+    --display: "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+    --body: "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+    /* Type: five steps, ~1.25 apart above body. Space: one 4px-based rhythm. */
+    --t-xs: .75rem; --t-sm: .875rem; --t-md: 1.25rem; --t-lg: 1.5625rem; --t-xl: 1.953rem; --t-2xl: 2.441rem;
+    --s-1: .25rem; --s-2: .5rem; --s-3: .75rem; --s-4: 1rem; --s-5: 1.5rem; --s-6: 2rem; --s-7: 3rem;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+    color-scheme: light;
   }
+  :root[data-theme="dark"] {
+    --ground: #131a1e; --ground-2: #1a2328; --ground-3: #243037;
+    --ink: #e4ebe7; --ink-2: #aab7b1; --ink-3: #85938d;
+    --terrain: #d49b6b; --contour: rgba(212, 155, 107, .20);
+    --hydro: #86bde3; --hydro-tint: rgba(134, 189, 227, .12);
+    --overprint: #e5609f; --on-overprint: #1a0b12;
+    --danger: #f08b80;
+    --rule: #2e3b42; --rule-strong: #c9d3ce;
+    color-scheme: dark;
+  }
+
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 2px; background: var(--light); color: var(--darkgray); font: 1rem/1.5 var(--bodyFont); }
-  h3 { font-family: var(--headerFont); color: var(--dark); margin: 1.25rem 0 .5rem; }
-  button, input, textarea, select { font: inherit; color: inherit; }
-  select { background: var(--light); border: 1px solid var(--lightgray); border-radius: 6px; padding: .3rem .4rem; max-width: 12rem; }
-  button { background: var(--highlight); border: 1px solid var(--lightgray); border-radius: 6px; padding: .3rem .8rem; cursor: pointer; }
-  button:hover { border-color: var(--secondary); color: var(--secondary); }
-  button.primary { background: var(--secondary); color: var(--light); border-color: var(--secondary); }
-  input[type=text], input[type=password], textarea { width: 100%; background: transparent; border: 1px solid var(--lightgray); border-radius: 6px; padding: .4rem .6rem; }
-  textarea { min-height: 14rem; resize: vertical; }
-  input:focus, textarea:focus { outline: 2px solid var(--tertiary); outline-offset: -1px; }
-  .bar { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
-  .bar .grow { flex: 1; }
-  .muted { color: var(--gray); font-size: .875rem; }
-  .card { border: 1px solid var(--lightgray); border-radius: 8px; padding: .75rem; margin: .5rem 0; }
-  ul { list-style: none; padding: 0; margin: 0; }
-  li.note { padding: .5rem .25rem; border-bottom: 1px solid var(--lightgray); cursor: pointer; }
-  li.note:hover, li.note.sel { background: var(--highlight); }
-  li.obj { display: flex; gap: .5rem; align-items: baseline; padding: .35rem 0; border-bottom: 1px solid var(--lightgray); }
-  li.obj .t { flex: 1; overflow-wrap: anywhere; }
-  li.obj.done .t { text-decoration: line-through; color: var(--gray); }
-  .read { overflow-wrap: anywhere; }
-  .read ul { list-style: disc; padding-left: 1.5rem; }
-  .read ol { padding-left: 1.5rem; }
-  .read a { color: var(--secondary); }
-  .read h1, .read h2, .read h3, .read h4 { font-family: var(--headerFont); color: var(--dark); margin: 1rem 0 .4rem; }
-  .read code { background: var(--highlight); padding: 0 .25rem; border-radius: 4px; font-size: .9em; }
-  .read pre { background: var(--highlight); padding: .5rem; border-radius: 6px; overflow-x: auto; }
-  .read pre code { background: none; padding: 0; }
-  .read blockquote { margin: .5rem 0; padding-left: .75rem; border-left: 3px solid var(--tertiary); color: var(--gray); }
-  .read img { max-width: 100%; }
-  .read table { border-collapse: collapse; }
-  .read th, .read td { border: 1px solid var(--lightgray); padding: .2rem .5rem; }
-  .x { background: none; border: 0; color: var(--gray); padding: 0 .3rem; }
+  html { background: var(--ground); }
+  body { margin: 0; padding: var(--s-4) clamp(var(--s-4), 4vw, var(--s-6)) var(--s-6); background: var(--ground); color: var(--ink); font: 400 1rem/1.55 var(--body); -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--hydro-tint); color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--hydro); outline-offset: 2px; }
+  input, textarea, select, button { font: inherit; color: inherit; }
+  textarea, input { caret-color: var(--overprint); }
   [hidden] { display: none !important; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Lettering: map labels are spaced caps in a condensed face. */
+  .label { font: 600 var(--t-xs)/1.2 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--terrain); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Buttons: overprint creates, ink commits, text buttons do the rest. */
+  .btn { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 2.75rem; padding: 0 var(--s-5); border: 1px solid transparent; border-radius: 3px;
+         font: 600 var(--t-sm)/1 var(--display); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: background-color .18s var(--ease), color .18s var(--ease), border-color .18s var(--ease), transform .12s var(--ease); }
+  .btn:active { transform: scale(.98); }
+  .btn-over { background: var(--overprint); color: var(--on-overprint); }
+  .btn-over:hover { background: color-mix(in srgb, var(--overprint) 86%, var(--ink)); }
+  .btn-ink { background: var(--ink); color: var(--ground); }
+  .btn-ink:hover { background: color-mix(in srgb, var(--ink) 82%, var(--hydro)); }
+  .btn-line { background: transparent; border-color: var(--rule); color: var(--ink); }
+  .btn-line:hover { border-color: var(--ink-2); }
+  .btn-text { background: none; border: 0; padding: 0 var(--s-2); min-height: 2.75rem; color: var(--ink-2); }
+  .btn-text:hover { color: var(--ink); }
+  .btn-danger { color: var(--danger); }
+  .btn-danger:hover { color: var(--danger); text-decoration: underline; text-underline-offset: 3px; }
+  .btn[disabled] { opacity: .45; cursor: default; }
+
+  /* Fields: survey forms, ruled not boxed. */
+  .field { width: 100%; min-height: 2.75rem; padding: var(--s-2) var(--s-1); background: transparent; border: 0; border-bottom: 1px solid var(--rule-strong); border-radius: 0; transition: border-color .18s var(--ease), box-shadow .18s var(--ease); }
+  .field::placeholder { color: var(--ink-3); }
+  .field:hover { border-bottom-color: var(--hydro); }
+  .field:focus { outline: none; border-bottom-color: var(--hydro); box-shadow: 0 1px 0 var(--hydro); }
+  .field option { background: var(--ground); color: var(--ink); }
+  .sel.plain select { min-height: 2.25rem; padding: var(--s-1) var(--s-6) var(--s-1) var(--s-2); border: 0; border-radius: 3px; color: var(--hydro); font-size: var(--t-sm); box-shadow: none; }
+  .sel.plain select:hover { background: var(--ground-2); }
+  .sel.plain { color: var(--hydro); }
+  .sel { position: relative; display: inline-flex; }
+  .sel select { appearance: none; -webkit-appearance: none; padding-right: var(--s-6); cursor: pointer; }
+  .sel::after { content: ""; position: absolute; right: var(--s-3); top: 50%; width: .625rem; height: .625rem; margin-top: -.3125rem; pointer-events: none;
+                background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 3l4 4 4-4' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat;
+                mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 3l4 4 4-4' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat; }
+
+  /* Title block: the sheet's neatline and cartouche. */
+  .sheet { position: relative; border-top: 3px double var(--rule-strong); border-bottom: 1px solid var(--rule-strong); padding: var(--s-5) 0 var(--s-5); overflow: hidden; }
+  .sheet .contours { position: absolute; right: -40px; top: -70px; width: 360px; height: 260px; pointer-events: none;
+                     -webkit-mask-image: linear-gradient(to left, #000 25%, transparent 70%); mask-image: linear-gradient(to left, #000 25%, transparent 70%); }
+  .sheet-row { position: relative; display: grid; gap: var(--s-4) var(--s-5); }
+  .sheet-meta { display: grid; gap: var(--s-3); justify-items: start; }
+  .sheet-ref { display: flex; align-items: center; gap: var(--s-3); }
+  .sheet-name { min-width: 0; align-self: end; }
+  .sheet-name h1 { margin: 0; font: 600 clamp(var(--t-xl), 5vw, var(--t-2xl))/1.05 var(--display); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
+  .sheet-name .sub { margin-top: var(--s-2); font-size: var(--t-sm); color: var(--ink-2); }
+  .scale { display: block; width: 6.125rem; height: 1.5rem; color: var(--ink); }
+  .scale text { font: 600 10px var(--display); letter-spacing: .1em; fill: var(--ink-2); text-transform: uppercase; }
+  .surveyor { display: flex; align-items: center; gap: var(--s-2) var(--s-3); flex-wrap: wrap; }
+  .surveyor .who { font-size: var(--t-sm); color: var(--ink-2); }
+  .surveyor .who b, .party-name { color: var(--hydro); font-weight: 600; font-style: italic; }
+  .login { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); align-items: end; margin-top: var(--s-5); }
+  .login .sel, .login .field { flex: 1 1 9rem; }
+  .login .sel select { width: 100%; }
+  .login .msg { flex-basis: 100%; min-height: 1.2em; font-size: var(--t-sm); color: var(--danger); margin: 0; }
+  .login .msg.ok { color: var(--ink-2); }
+
+  /* Journal: legend beside the open field note. */
+  .split { display: grid; gap: var(--s-6); margin-top: var(--s-6); }
+  .legend-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); padding-bottom: var(--s-3); border-bottom: 1px solid var(--rule-strong); }
+  .legend-head .sel select, .ledger-head .sel select { min-height: 2.25rem; padding-top: var(--s-1); padding-bottom: var(--s-1); font-size: var(--t-sm); }
+  .entries { list-style: none; margin: 0; padding: 0; }
+  .entry { display: grid; grid-template-columns: 3.25rem 1fr; gap: var(--s-1) var(--s-3); width: 100%; padding: var(--s-4) var(--s-3) var(--s-4) var(--s-2); text-align: left; background: none; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; cursor: pointer; transition: background-color .18s var(--ease); }
+  .entry:hover { background: var(--ground-2); }
+  .entry[aria-current="true"] { background: var(--hydro-tint); }
+  .entry .ref { grid-row: span 2; padding-top: .125rem; font: 600 var(--t-xs)/1.4 var(--display); letter-spacing: .08em; color: var(--terrain); }
+  .entry[aria-current="true"] .ref { color: var(--hydro); }
+  .entry .t { font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .entry .m { font-size: var(--t-sm); color: var(--ink-2); }
+  .reader { min-width: 0; scroll-margin-top: 5.5rem; } /* clears the wiki's fixed mobile header */
+  .note-head { display: grid; grid-template-columns: auto auto 1fr; border-top: 1px solid var(--rule-strong); border-bottom: 1px solid var(--rule); }
+  .note-head > div { padding: var(--s-3) var(--s-4) var(--s-3) 0; margin-right: var(--s-4); border-right: 1px solid var(--rule); min-width: 0; }
+  .note-head > div:last-child { border-right: 0; margin-right: 0; }
+  .note-head .v { margin-top: var(--s-1); font-size: var(--t-sm); color: var(--ink); overflow-wrap: anywhere; }
+  .note-head .v.num { white-space: nowrap; }
+  .note-title { margin: var(--s-6) 0 var(--s-4); font: 600 var(--t-xl)/1.1 var(--display); letter-spacing: .01em; overflow-wrap: anywhere; }
+  .note-actions { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-6); padding-top: var(--s-4); border-top: 1px solid var(--rule); }
+  .note-actions .status { flex: 1; font-size: var(--t-sm); color: var(--ink-3); }
+  .only-narrow { display: none; }
+
+  /* Rendered markdown, always sanitized. */
+  .prose { max-width: 68ch; font-size: 1rem; line-height: 1.65; overflow-wrap: anywhere; }
+  .prose > :first-child { margin-top: 0; }
+  .prose p { margin: 0 0 1em; }
+  .prose h1, .prose h2, .prose h3, .prose h4 { font-family: var(--display); font-weight: 600; letter-spacing: .02em; line-height: 1.2; margin: 1.75em 0 .5em; }
+  .prose h1 { font-size: var(--t-lg); } .prose h2 { font-size: var(--t-md); } .prose h3, .prose h4 { font-size: var(--t-sm); text-transform: uppercase; letter-spacing: .12em; color: var(--terrain); }
+  .prose ul, .prose ol { padding-left: var(--s-5); margin: 0 0 1em; }
+  .prose li + li { margin-top: var(--s-1); }
+  .prose li::marker { color: var(--terrain); }
+  .prose a { color: var(--hydro); text-underline-offset: 3px; }
+  .prose code { font-size: .9em; background: var(--ground-2); padding: .05em .3em; border-radius: 2px; }
+  .prose pre { background: var(--ground-2); padding: var(--s-4); border-radius: 3px; overflow-x: auto; }
+  .prose pre code { background: none; padding: 0; }
+  .prose blockquote { margin: 0 0 1em; padding: .1em 0 .1em var(--s-4); color: var(--ink-2); font-style: italic; background: linear-gradient(var(--terrain), var(--terrain)) left / 1px 100% no-repeat; }
+  .prose hr { border: 0; border-top: 1px solid var(--rule); margin: var(--s-5) 0; }
+  .prose img { max-width: 100%; }
+  .prose table { border-collapse: collapse; font-size: var(--t-sm); }
+  .prose th, .prose td { border: 1px solid var(--rule); padding: var(--s-1) var(--s-2); text-align: left; }
+
+  /* Editor */
+  .ed-title { width: 100%; margin: var(--s-5) 0 var(--s-4); padding: var(--s-1) 0 var(--s-2); background: none; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; font: 600 var(--t-xl)/1.1 var(--display); }
+  .ed-title:focus { outline: none; border-bottom-color: var(--hydro); }
+  .ed-title::placeholder { color: var(--ink-3); }
+  .ed-body { min-height: 16rem; padding: var(--s-3) var(--s-4); background: var(--ground-2); border: 1px solid var(--rule); border-radius: 3px; resize: vertical; line-height: 1.65; font-size: 1rem; }
+  .ed-hint { margin: var(--s-2) 0 0; font-size: var(--t-sm); color: var(--ink-3); }
+
+  /* Uncharted: empty ground is drawn, never blank. */
+  .uncharted { position: relative; display: grid; place-items: center; min-height: 14rem; padding: var(--s-7) var(--s-4); text-align: center; overflow: hidden; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .uncharted .contours { position: absolute; inset: 50% auto auto 50%; width: 520px; height: 360px; transform: translate(-50%, -50%); pointer-events: none; }
+  .uncharted .copy { position: relative; max-width: 26rem; }
+  .lettering { margin: 0 0 var(--s-3); font: 600 var(--t-xl)/1 var(--display); letter-spacing: .5em; text-indent: .5em; text-transform: uppercase; color: var(--terrain); }
+  .empty { padding: var(--s-5) var(--s-2); color: var(--ink-2); font-style: italic; }
+  .uncharted p { margin: 0; color: var(--ink-2); }
+  .skel { height: 4.25rem; border-bottom: 1px solid var(--rule); background: linear-gradient(90deg, transparent 0 3rem, var(--ground-2) 3rem 60%, transparent 60%) center / 100% 40% no-repeat; }
+
+  /* Quests: a dense ruled ledger of survey marks. */
+  .plot { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; margin-top: var(--s-6); }
+  .plot .field { flex: 1 1 14rem; }
+  .plot .priv { display: inline-flex; align-items: center; gap: var(--s-2); padding: 0 var(--s-2); font-size: var(--t-sm); color: var(--ink-2); accent-color: var(--hydro); }
+  .ledger-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); margin-top: var(--s-6); padding-bottom: var(--s-3); border-bottom: 1px solid var(--rule-strong); }
+  .ledger { list-style: none; margin: 0; padding: 0; }
+  .quest { display: grid; grid-template-columns: 2.75rem 1fr auto auto; align-items: center; gap: 0 var(--s-3); min-height: 3.5rem; padding: var(--s-2) 0; border-bottom: 1px solid var(--rule); }
+  .quest .t { min-width: 0; overflow-wrap: anywhere; line-height: 1.35; }
+  .quest .by { display: block; margin-top: .125rem; font-size: var(--t-sm); color: var(--ink-3); }
+  .quest.done .t > span:first-child { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--terrain); }
+  .quest .who { font-size: var(--t-sm); color: var(--hydro); white-space: nowrap; }
+  .quest .sel select { max-width: 9.5rem; min-height: 2.25rem; padding: var(--s-1) var(--s-6) var(--s-1) var(--s-2); background: transparent; border: 1px solid transparent; border-radius: 3px; color: var(--hydro); font-size: var(--t-sm); }
+  .quest .sel select:hover { border-color: var(--rule); }
+  .quest .sel { color: var(--hydro); }
+  .done-head { margin-top: var(--s-7); }
+  .x { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; background: none; border: 0; border-radius: 3px; color: var(--ink-3); cursor: pointer; }
+  .x:hover { color: var(--danger); background: var(--ground-2); }
+  .x svg { width: 14px; height: 14px; }
+
+  /* Survey mark: open triangle; done is a filled trig point. Ticking inks it from the base up. */
+  .mark { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; background: none; border: 0; border-radius: 3px; cursor: pointer; color: var(--ink-2); }
+  .mark:hover { color: var(--ink); background: var(--ground-2); }
+  .mark[disabled] { cursor: default; background: none; }
+  .mark svg { width: 22px; height: 22px; overflow: visible; }
+  .mark .edge { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
+  .mark .ink { fill: var(--hydro); transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0); transition: transform .26s var(--ease); }
+  .mark .pt { fill: var(--ground); opacity: 0; transition: opacity .14s var(--ease) .14s; }
+  .mark[aria-pressed="true"] { color: var(--hydro); }
+  .mark[aria-pressed="true"] .ink { transform: scaleY(1); }
+  .mark[aria-pressed="true"] .pt { opacity: 1; }
+
+  @media (min-width: 640px) {
+    .split { grid-template-columns: minmax(12rem, 34%) 1fr; gap: var(--s-6); align-items: start; }
+    .sheet-row { grid-template-columns: 1fr auto; align-items: end; }
+    .sheet-meta { justify-items: end; }
+    .surveyor { flex-wrap: nowrap; }
+  }
+  @media (max-width: 639px) {
+    .split.open .reader { order: -1; }
+    .split:not(.open) .reader { display: none; }
+    .only-narrow { display: inline-flex; }
+    .scale { display: none; }
+    .sheet .contours { width: 220px; height: 160px; right: -60px; top: -50px; opacity: .6; }
+    .quest { grid-template-columns: 2.75rem 1fr auto; }
+    .quest .assign { grid-column: 2 / 3; justify-self: start; margin: 0 0 0 calc(-1 * var(--s-2)); }
+    .quest .x { grid-column: 3; grid-row: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0s !important; }
+  }
 </style>
 </head>
 <body>
-<form class="bar" id="login" hidden>
-  <select id="luser" required style="flex:1;min-width:8rem;max-width:none"></select>
-  <input type="text" id="lusertext" placeholder="Username" autocomplete="username" hidden style="flex:1;min-width:8rem;width:auto" />
-  <input type="password" id="lpass" placeholder="Password" autocomplete="current-password" required style="flex:1;min-width:8rem;width:auto" />
-  <button class="primary">Log in</button>
-  <span class="muted" id="lmsg" style="flex-basis:100%"></span>
-</form>
-<div class="bar" id="whobar" hidden><span class="grow muted" id="who"></span><button id="signout">Log out</button></div>
-
-<section id="notes" hidden>
-  <div class="bar"><h3 class="grow">Party notes</h3><select id="nfilter" aria-label="Show notes by"></select><button class="primary" id="newnote" hidden>New note</button></div>
-  <div class="card" id="editor" hidden>
-    <div id="edit">
-      <input type="text" id="ntitle" placeholder="Title" />
-      <p><textarea id="nbody" placeholder="Write your notes… Markdown works: **bold**, *italic*, # heading, - list, [link](https://…)"></textarea></p>
-      <div class="bar"><button id="ndelete">Delete</button><span class="grow muted" id="nstatus"></span><button class="primary" id="nsave">Save</button><button id="nclose">Close</button></div>
+<header class="sheet">
+  <svg class="contours" id="sheetContours" aria-hidden="true"></svg>
+  <div class="sheet-row">
+    <div class="sheet-name">
+      <h1 id="sheetTitle">&nbsp;</h1>
+      <div class="sub num" id="sheetSub">&nbsp;</div>
     </div>
-    <div id="view">
-      <h3 id="vtitle"></h3><div class="read" id="vbody"></div>
-      <div class="bar"><span class="grow muted" id="vmeta"></span><button id="vedit" hidden>Edit</button><button id="vclose">Close</button></div>
+    <div class="sheet-meta">
+      <div class="sheet-ref">
+        <span class="label" id="sheetNo">&nbsp;</span>
+        <svg class="scale" viewBox="0 0 98 24" aria-hidden="true">
+          <rect x="0.5" y="2.5" width="96" height="5" fill="none" stroke="currentColor" stroke-width="1" />
+          <rect x="0.5" y="2.5" width="24" height="5" fill="currentColor" /><rect x="48.5" y="2.5" width="24" height="5" fill="currentColor" />
+          <text x="97" y="21" text-anchor="end">1 league</text><text x="0" y="21">0</text>
+        </svg>
+      </div>
+      <div class="surveyor" id="whobar" hidden>
+        <span class="who" id="who"></span>
+        <button class="btn btn-text" id="signout" type="button">Log out</button>
+        <button class="btn btn-over" id="newnote" type="button" hidden>New entry</button>
+      </div>
     </div>
   </div>
-  <ul id="notelist"></ul>
+  <form class="login" id="login" hidden>
+    <span class="sel"><select class="field" id="luser" aria-label="Your name" required></select></span>
+    <input class="field" type="text" id="lusertext" placeholder="Username" aria-label="Username" autocomplete="username" hidden />
+    <input class="field" type="password" id="lpass" placeholder="Password" aria-label="Password" autocomplete="current-password" required />
+    <button class="btn btn-over">Log in</button>
+    <p class="msg" id="lmsg" role="status"></p>
+  </form>
+</header>
+<script>
+  // Name the sheet before the Firebase modules finish loading, so the title never flashes wrong.
+  ;(function () {
+    var h = location.hash.slice(1), quests = h === "quests" || h === "objectives"
+    document.getElementById("sheetNo").textContent = "Ecerah · Sheet " + (quests ? "II" : "I")
+    document.getElementById("sheetTitle").textContent = quests ? "Quests" : "The party's journal"
+    try { var t = parent.document.documentElement.getAttribute("saved-theme"); if (t) document.documentElement.dataset.theme = t } catch (e) {}
+  })()
+</script>
+
+<main>
+<section id="journal" hidden>
+  <div class="split" id="split">
+    <div class="legend">
+      <div class="legend-head">
+        <span class="label">Legend</span>
+        <span class="sel plain"><select class="field" id="nfilter" aria-label="Show entries by"></select></span>
+      </div>
+      <ul class="entries" id="notelist"></ul>
+    </div>
+
+    <article class="reader" id="reader" aria-live="polite">
+      <div id="blank" class="uncharted">
+        <svg class="contours" aria-hidden="true"></svg>
+        <div class="copy"><h2 class="lettering">Uncharted</h2><p id="blankText">Pick an entry from the legend.</p></div>
+      </div>
+
+      <div id="view" hidden>
+        <div class="note-head">
+          <div><div class="label">Ref</div><div class="v num" id="vref"></div></div>
+          <div><div class="label">Surveyor</div><div class="v party-name" id="vauthor"></div></div>
+          <div><div class="label">Recorded</div><div class="v num" id="vdate"></div></div>
+        </div>
+        <h2 class="note-title" id="vtitle"></h2>
+        <div class="prose" id="vbody"></div>
+        <div class="note-actions">
+          <span class="status"></span>
+          <button class="btn btn-line" id="vedit" type="button" hidden>Edit</button>
+          <button class="btn btn-text only-narrow" id="vclose" type="button">Back to legend</button>
+        </div>
+      </div>
+
+      <div id="edit" hidden>
+        <div class="note-head">
+          <div><div class="label">Ref</div><div class="v num" id="eref"></div></div>
+          <div><div class="label">Surveyor</div><div class="v party-name" id="eauthor"></div></div>
+          <div><div class="label">Status</div><div class="v" id="nstatus" role="status"></div></div>
+        </div>
+        <input class="ed-title" type="text" id="ntitle" placeholder="Title this entry" aria-label="Entry title" />
+        <textarea class="field ed-body" id="nbody" aria-label="Entry text" placeholder="What happened? Names, places, clues…"></textarea>
+        <p class="ed-hint">Markdown works: **bold**, *italic*, # heading, - list, [link](https://…). Saves as you write.</p>
+        <div class="note-actions">
+          <button class="btn btn-text btn-danger" id="ndelete" type="button">Delete</button>
+          <span class="status"></span>
+          <button class="btn btn-text" id="nclose" type="button">Close</button>
+          <button class="btn btn-ink" id="nsave" type="button">Save</button>
+        </div>
+      </div>
+    </article>
+  </div>
 </section>
 
-<section id="objectives" hidden>
-  <form class="bar" id="addobj" hidden>
-    <input type="text" id="otext" placeholder="New objective" required maxlength="500" style="flex:1;width:auto" />
-    <select id="oassign" aria-label="Assign to"></select>
-    <label id="oprivlabel"><input type="checkbox" id="opriv" /> Private</label>
-    <button class="primary">Add</button>
+<section id="quests" hidden>
+  <form class="plot" id="addobj" hidden>
+    <label class="sr" for="otext">New quest</label>
+    <input class="field" type="text" id="otext" placeholder="Plot a new quest…" required maxlength="500" />
+    <span class="sel"><select class="field" id="oassign" aria-label="Assign to"></select></span>
+    <label class="priv" id="oprivlabel"><input type="checkbox" id="opriv" /> Private</label>
+    <button class="btn btn-over">Add quest</button>
   </form>
-  <div class="bar"><h3 class="grow">Party objectives</h3><select id="ofilter" aria-label="Show objectives for"></select></div>
-  <ul id="party"></ul>
-  <div id="privsection"><h3 id="privhead">My private objectives</h3><ul id="priv"></ul></div>
+
+  <div class="ledger-head">
+    <span class="label">Open quests</span>
+    <span class="sel plain"><select class="field" id="ofilter" aria-label="Show quests for"></select></span>
+  </div>
+  <ul class="ledger" id="party"></ul>
+  <div class="ledger-head done-head" id="donehead" hidden><span class="label" id="donelabel">Completed</span></div>
+  <ul class="ledger" id="partydone"></ul>
+
+  <div id="privsection">
+    <div class="ledger-head"><span class="label" id="privhead">My private quests</span></div>
+    <ul class="ledger" id="priv"></ul>
+  </div>
 </section>
+</main>
 
 <script type="module">
-// false: anyone can read; logging in is only needed to write; no private objectives.
-// true:  nothing shows until you log in, and private objectives turn on.
+// false: anyone can read; logging in is only needed to write; no private quests.
+// true:  nothing shows until you log in, and private quests turn on.
 // Switching it? Also paste the matching rules into Firestore (firestore.rules / firestore.login.rules).
 const requireLogin = false
 
@@ -109,32 +355,62 @@ import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, dele
 import { marked } from "https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js"
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.es.mjs"
 
-// Notes are written by other players, so rendered markdown is always sanitized.
+// Entries are written by other players, so rendered markdown is always sanitized.
 marked.setOptions({ breaks: true }) // single newlines break lines, like the wiki
 DOMPurify.addHook("afterSanitizeAttributes", (n) => { if (n.tagName === "A") { n.target = "_blank"; n.rel = "noopener" } })
 const renderMd = (md) => DOMPurify.sanitize(marked.parse(md || ""), { RETURN_DOM_FRAGMENT: true })
 
 const $ = (id) => document.getElementById(id)
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e }
-const when = (ts) => ts?.toDate ? ts.toDate().toLocaleString() : "just now"
-const view = location.hash.slice(1) === "objectives" ? "objectives" : "notes"
+const svgEl = (tag, attrs = {}) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e }
+const when = (ts) => ts?.toDate ? ts.toDate().toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "just now"
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`
+const hash = location.hash.slice(1)
+const view = hash === "quests" || hash === "objectives" ? "quests" : "journal"
+const wide = () => matchMedia("(min-width: 640px)").matches
+
 // Quartz's in-site navigation only changes this iframe's #hash between pages, which doesn't reload it.
 addEventListener("hashchange", () => location.reload())
 
-// Match the wiki's theme and grow the iframe to fit its content.
-const themeVars = ["light", "lightgray", "gray", "darkgray", "dark", "secondary", "tertiary", "highlight", "bodyFont", "headerFont"]
+// Follow the wiki's light/dark toggle, and grow the iframe to fit its content.
 function syncTheme() {
-  try {
-    const cs = getComputedStyle(parent.document.documentElement)
-    for (const v of themeVars) { const x = cs.getPropertyValue("--" + v); if (x) document.documentElement.style.setProperty("--" + v, x) }
-  } catch {}
+  let t = null
+  try { t = parent.document.documentElement.getAttribute("saved-theme") } catch {}
+  document.documentElement.dataset.theme = t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
 }
 syncTheme()
-try {
-  parent.document.addEventListener("themechange", syncTheme)
-  parent.document.querySelectorAll('link[rel=stylesheet][href*="fonts.googleapis"]').forEach((l) => document.head.append(l.cloneNode()))
-} catch {}
-new ResizeObserver(() => { if (window.frameElement) frameElement.style.height = document.body.scrollHeight + 4 + "px" }).observe(document.body)
+try { parent.document.addEventListener("themechange", syncTheme) } catch {}
+new ResizeObserver(() => { if (window.frameElement) frameElement.style.height = document.body.scrollHeight + "px" }).observe(document.body)
+
+// Contour lines: concentric, gently irregular rings, drawn once per surface.
+function drawContours(svg, { rings = 9, seed = 1, w = 360, h = 260, cx = w * 0.6, cy = h * 0.55 } = {}) {
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`)
+  svg.replaceChildren()
+  for (let k = 1; k <= rings; k++) {
+    const r = k * (Math.min(w, h) / (rings * 1.7)), pts = []
+    for (let i = 0; i <= 72; i++) {
+      const a = (i / 72) * Math.PI * 2
+      const d = r * (1 + 0.16 * Math.sin(3 * a + seed + k * 0.35) + 0.08 * Math.sin(5 * a - seed * 1.7) + 0.04 * Math.sin(9 * a + k))
+      pts.push(`${(cx + d * Math.cos(a) * 1.35).toFixed(1)},${(cy + d * Math.sin(a)).toFixed(1)}`)
+    }
+    svg.append(svgEl("path", { d: `M${pts.join("L")}Z`, fill: "none", stroke: "var(--contour)", "stroke-width": k % 4 === 0 ? 1.3 : 0.7 }))
+  }
+}
+drawContours($("sheetContours"), { seed: view === "journal" ? 1.2 : 4.1 })
+document.querySelectorAll(".uncharted .contours").forEach((s) => drawContours(s, { rings: 11, seed: 2.6, w: 520, h: 360, cx: 260, cy: 180 }))
+
+const icon = {
+  mark() {
+    const s = svgEl("svg", { viewBox: "0 0 22 22", "aria-hidden": "true" })
+    s.append(svgEl("path", { class: "ink", d: "M11 3.2 19.4 18.2H2.6Z" }), svgEl("path", { class: "edge", d: "M11 3.2 19.4 18.2H2.6Z" }), svgEl("circle", { class: "pt", cx: 11, cy: 13, r: 1.9 }))
+    return s
+  },
+  x() {
+    const s = svgEl("svg", { viewBox: "0 0 14 14", "aria-hidden": "true" })
+    s.append(svgEl("path", { d: "M2.5 2.5l9 9M11.5 2.5l-9 9", stroke: "currentColor", "stroke-width": 1.6, "stroke-linecap": "round" }))
+    return s
+  },
+}
 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
@@ -154,19 +430,19 @@ function fillPlayers(sel, firstLabel, value = "") {
 }
 
 fillPlayers($("luser"), "Choose your name")
-if (!players.length) { $("luser").hidden = true; $("luser").required = false; $("lusertext").hidden = false; $("lusertext").required = true }
-fillPlayers($("nfilter"), "All players").onchange = () => renderNoteList()
+if (!players.length) { $("luser").parentElement.hidden = true; $("luser").required = false; $("lusertext").hidden = false; $("lusertext").required = true }
+fillPlayers($("nfilter"), "All surveyors").onchange = () => renderNoteList()
 fillPlayers($("ofilter"), "Everyone").onchange = () => renderObjs()
 fillPlayers($("oassign"), "Whole party")
 
 $("login").onsubmit = (e) => {
   e.preventDefault()
-  $("lmsg").textContent = "Logging in…"
+  $("lmsg").className = "msg ok"; $("lmsg").textContent = "Logging in…"
   const username = players.length ? $("luser").value : $("lusertext").value
   const email = `${username.trim().toLowerCase()}@${USER_DOMAIN}`
   signInWithEmailAndPassword(auth, email, $("lpass").value)
     .then(() => { $("lpass").value = ""; $("lmsg").textContent = "" })
-    .catch(() => { $("lmsg").textContent = "Wrong username or password." })
+    .catch(() => { $("lmsg").className = "msg"; $("lmsg").textContent = "That name and password don't match. Check with your GM if you're stuck." })
 }
 $("signout").onclick = () => signOut(auth)
 
@@ -177,77 +453,103 @@ onAuthStateChanged(auth, async (user) => {
     const m = await getDoc(doc(db, "members", user.email.toLowerCase())).catch(() => null)
     const username = user.email.split("@")[0]
     if (m?.exists()) me = { uid: user.uid, user: username, name: m.data().name || username, gm: m.data().gm === true }
-    $("who").textContent = me ? `Logged in as ${me.name}${me.gm ? " (GM)" : ""}` : `${username} isn't on the party list. Ask your GM.`
+    const who = $("who"); who.replaceChildren()
+    if (me) who.append("Surveyor ", el("b", null, me.name), me.gm ? " · GM" : "")
+    else who.textContent = `${username} isn't on the party list yet. Ask your GM to add you.`
   }
   $("login").hidden = !!user
   $("whobar").hidden = !user
   const canSee = !requireLogin || !!me
-  $("notes").hidden = view !== "notes" || !canSee
-  $("objectives").hidden = view !== "objectives" || !canSee
-  if (!canSee) return
-  view === "notes" ? startNotes() : startObjectives()
+  $("journal").hidden = view !== "journal" || !canSee
+  $("quests").hidden = view !== "quests" || !canSee
+  if (!canSee) { $("sheetSub").textContent = "Log in to read the party's survey."; return }
+  view === "journal" ? startNotes() : startObjectives()
 })
 
-// ---------- Notes: everyone reads all; author or GM edits ----------
-let notes = [], openId = null, saveTimer = null
+// ---------- Journal: everyone reads every entry; author or GM edits ----------
+let notes = [], openId = null, saveTimer = null, loaded = false, refOf = new Map()
 
 function startNotes() {
   $("newnote").hidden = !me
+  loaded = false
   closeNote()
   unsubs.push(onSnapshot(collection(db, "notes"), (snap) => {
     notes = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (b.updated?.toMillis?.() ?? Infinity) - (a.updated?.toMillis?.() ?? Infinity))
+    // Refs follow the order entries were first recorded, so E-03 stays E-03.
+    const byAge = [...notes].sort((a, b) => ((a.created ?? a.updated)?.toMillis?.() ?? Infinity) - ((b.created ?? b.updated)?.toMillis?.() ?? Infinity))
+    refOf = new Map(byAge.map((n, i) => [n.id, `E-${String(i + 1).padStart(2, "0")}`]))
+    $("sheetSub").textContent = `${plural(notes.length, "entry", "entries")} by the party`
+    const first = !loaded; loaded = true
     renderNoteList()
+    if (first && !openId && notes.length && wide()) openNote(notes[0].id)
+    else if (openId && !$("view").hidden) openNote(openId) // keep the open entry current
   }))
 }
 
 function renderNoteList() {
   const ul = $("notelist"); ul.replaceChildren()
+  if (!loaded) { for (let i = 0; i < 3; i++) ul.append(el("li", "skel")); return }
   const only = playerName($("nfilter").value)
   const shown = only ? notes.filter((n) => n.authorName === only) : notes
-  if (!shown.length) ul.append(el("li", "muted", "No notes yet."))
-  for (const n of shown) {
-    const li = el("li", "note" + (n.id === openId ? " sel" : ""))
-    li.append(el("div", null, n.title || "Untitled"), el("div", "muted", `${n.authorName} · ${when(n.updated)}`))
-    li.onclick = () => openNote(n.id)
-    ul.append(li)
+  if (!shown.length) {
+    ul.append(el("li", "empty", only ? `${only} hasn't written anything yet.` : me ? "No entries yet. Start the party's journal with New entry." : "No entries yet. Log in to write the first one."))
   }
+  for (const n of shown) {
+    const b = el("button", "entry"); b.type = "button"
+    b.setAttribute("aria-current", n.id === openId ? "true" : "false")
+    b.append(el("span", "ref num", refOf.get(n.id)), el("span", "t", n.title || "Untitled entry"), el("span", "m num", `${n.authorName} · ${when(n.updated)}`))
+    b.onclick = () => openNote(n.id)
+    const li = el("li"); li.append(b); ul.append(li)
+  }
+  $("blankText").textContent = notes.length ? "Pick an entry from the legend." : me ? "The first entry sets the map. Use New entry to begin." : "Nothing recorded yet."
 }
 
-// Notes open formatted; the author (or GM) can switch to the markdown editor.
+// Entries open formatted; the author (or GM) can switch to the markdown editor.
 function openNote(id, edit = false) {
   flushSave()
   const n = notes.find((x) => x.id === id); if (!n) return
   openId = id
   const canEdit = !!me && (n.author === me.uid || me.gm)
   const editing = canEdit && edit
-  $("editor").hidden = false; $("edit").hidden = !editing; $("view").hidden = editing
+  $("split").classList.add("open")
+  $("blank").hidden = true; $("edit").hidden = !editing; $("view").hidden = editing
   if (editing) {
+    $("eref").textContent = refOf.get(id) || "New"; $("eauthor").textContent = n.authorName
     $("ntitle").value = n.title || ""; $("nbody").value = n.body || ""
-    $("nstatus").textContent = `${n.authorName} · saved ${when(n.updated)}`
-    $("nbody").focus()
+    $("nstatus").textContent = `Saved ${when(n.updated)}`
+    ;(n.title ? $("nbody") : $("ntitle")).focus()
   } else {
-    $("vtitle").textContent = n.title || "Untitled"; $("vbody").replaceChildren(renderMd(n.body))
-    $("vmeta").textContent = `${n.authorName} · ${when(n.updated)}`
+    $("vref").textContent = refOf.get(id) || "New"; $("vauthor").textContent = n.authorName; $("vdate").textContent = when(n.updated)
+    $("vtitle").textContent = n.title || "Untitled entry"
+    $("vbody").replaceChildren(n.body ? renderMd(n.body) : el("p", null, "This entry is empty."))
     $("vedit").hidden = !canEdit
   }
   renderNoteList()
+  if (!wide()) $("reader").scrollIntoView({ block: "start" })
 }
 
-function closeNote() { flushSave(); openId = null; $("editor").hidden = true; renderNoteList() }
+function closeNote() {
+  flushSave(); openId = null
+  $("split").classList.remove("open")
+  $("edit").hidden = true; $("view").hidden = true; $("blank").hidden = false
+  renderNoteList()
+}
 
 function queueSave() { $("nstatus").textContent = "Saving…"; clearTimeout(saveTimer); saveTimer = setTimeout(flushSave, 800) }
 function flushSave(force = false) {
   if ((!saveTimer && !force) || !openId) return
   clearTimeout(saveTimer); saveTimer = null
-  updateDoc(doc(db, "notes", openId), { title: $("ntitle").value, body: $("nbody").value, updated: serverTimestamp() })
-    .then(() => { $("nstatus").textContent = "Saved" })
-    .catch((e) => { $("nstatus").textContent = "Save failed: " + e.message })
+  const id = openId
+  updateDoc(doc(db, "notes", id), { title: $("ntitle").value, body: $("nbody").value, updated: serverTimestamp() })
+    .then(() => { if (openId === id) $("nstatus").textContent = "Saved" })
+    .catch((e) => { $("nstatus").textContent = "Not saved. " + (e.code === "permission-denied" ? "You can only edit your own entries." : "Check your connection and press Save again.") })
 }
-addEventListener("pagehide", flushSave)
+addEventListener("pagehide", () => flushSave())
 
 $("ntitle").oninput = $("nbody").oninput = queueSave
-$("nclose").onclick = $("vclose").onclick = closeNote
+$("nclose").onclick = () => openNote(openId)
+$("vclose").onclick = closeNote
 $("vedit").onclick = () => openNote(openId, true)
 $("nsave").onclick = () => {
   const n = notes.find((x) => x.id === openId)
@@ -256,25 +558,33 @@ $("nsave").onclick = () => {
   openNote(openId)
 }
 $("newnote").onclick = async () => {
-  const ref = await addDoc(collection(db, "notes"), { title: "", body: "", author: me.uid, authorName: me.name, updated: serverTimestamp() })
-  notes.unshift({ id: ref.id, title: "", body: "", author: me.uid, authorName: me.name })
-  openNote(ref.id, true)
+  $("newnote").disabled = true
+  try {
+    const ref = await addDoc(collection(db, "notes"), { title: "", body: "", author: me.uid, authorName: me.name, created: serverTimestamp(), updated: serverTimestamp() })
+    if (!notes.some((n) => n.id === ref.id)) notes.unshift({ id: ref.id, title: "", body: "", author: me.uid, authorName: me.name })
+    openNote(ref.id, true)
+  } finally { $("newnote").disabled = false }
 }
 $("ndelete").onclick = async () => {
-  if (!openId || !confirm("Delete this note for everyone?")) return
+  if (!openId || !confirm("Delete this entry for the whole party? This can't be undone.")) return
   clearTimeout(saveTimer); saveTimer = null
-  await deleteDoc(doc(db, "notes", openId)); closeNote()
+  const id = openId; openId = null
+  await deleteDoc(doc(db, "notes", id)); closeNote()
 }
 
-// ---------- Objectives: party-wide; private ones (owner + GM only) when requireLogin is on ----------
+// ---------- Quests: party-wide; private ones (owner + GM only) when requireLogin is on ----------
 const objs = new Map()
+let questsLoaded = false, questRef = new Map()
 
 function startObjectives() {
-  objs.clear(); renderObjs()
+  objs.clear(); questsLoaded = false; renderObjs()
   $("addobj").hidden = !me
   $("oprivlabel").hidden = $("privsection").hidden = !requireLogin
-  $("privhead").textContent = me?.gm ? "Private objectives (all players)" : "My private objectives"
-  const onSnap = (snap) => { snap.docChanges().forEach((c) => c.type === "removed" ? objs.delete(c.doc.id) : objs.set(c.doc.id, { id: c.doc.id, ...c.doc.data() })); renderObjs() }
+  $("privhead").textContent = me?.gm ? "Private quests (all players)" : "My private quests"
+  const onSnap = (snap) => {
+    snap.docChanges().forEach((c) => c.type === "removed" ? objs.delete(c.doc.id) : objs.set(c.doc.id, { id: c.doc.id, ...c.doc.data() }))
+    questsLoaded = true; renderObjs()
+  }
   // Firestore queries must match the rules, so non-GMs fetch the visible slices separately.
   const col = collection(db, "objectives")
   if (me?.gm) unsubs.push(onSnapshot(col, onSnap))
@@ -284,34 +594,60 @@ function startObjectives() {
   }
 }
 
-function renderObjs() {
-  // Filtering by a player shows objectives they added or are assigned to.
-  const fUser = $("ofilter").value, fName = playerName(fUser)
-  const sorted = [...objs.values()]
-    .filter((o) => !fUser || o.assignee === fUser || o.ownerName === fName)
-    .sort((a, b) => a.done - b.done || (a.created?.toMillis?.() ?? Infinity) - (b.created?.toMillis?.() ?? Infinity))
-  for (const [ulId, priv] of [["party", false], ["priv", true]]) {
-    const ul = $(ulId); ul.replaceChildren()
-    const items = sorted.filter((o) => o.private === priv)
-    if (!items.length) ul.append(el("li", "muted", "Nothing here yet."))
-    for (const o of items) {
-      const li = el("li", "obj" + (o.done ? " done" : ""))
-      const cb = el("input"); cb.type = "checkbox"; cb.checked = !!o.done; cb.disabled = !me
-      cb.onchange = () => updateDoc(doc(db, "objectives", o.id), { done: cb.checked })
-      let assignee
-      if (me) {
-        assignee = fillPlayers(el("select"), "Whole party", o.assignee); assignee.setAttribute("aria-label", "Assigned to")
-        assignee.onchange = () => updateDoc(doc(db, "objectives", o.id), { assignee: assignee.value || null, assigneeName: playerName(assignee.value) || null })
-      } else assignee = el("span", "muted", o.assigneeName || "Whole party")
-      li.append(cb, el("span", "t", o.text), assignee, el("span", "muted", `by ${o.ownerName}`))
-      if (me && (o.owner === me.uid || me.gm)) {
-        const x = el("button", "x", "✕"); x.title = "Delete"
-        x.onclick = () => confirm("Delete this objective?") && deleteDoc(doc(db, "objectives", o.id))
-        li.append(x)
-      }
-      ul.append(li)
-    }
+function questRow(o) {
+  const li = el("li", "quest" + (o.done ? " done" : ""))
+  const mark = el("button", "mark"); mark.type = "button"
+  mark.setAttribute("aria-pressed", o.done ? "true" : "false")
+  mark.setAttribute("aria-label", `${o.done ? "Reopen" : "Mark done"}: ${o.text}`)
+  mark.append(icon.mark()); mark.disabled = !me
+  // Ink the mark first, then commit; the ledger re-sorts when Firestore confirms.
+  mark.onclick = () => {
+    const done = mark.getAttribute("aria-pressed") !== "true"
+    mark.setAttribute("aria-pressed", String(done))
+    const commit = () => updateDoc(doc(db, "objectives", o.id), { done }).catch(() => renderObjs())
+    setTimeout(commit, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 260)
   }
+  const t = el("div", "t"); t.append(el("span", null, o.text), el("span", "by num", `${questRef.get(o.id) || "Q-new"} · Plotted by ${o.ownerName}`))
+  let assign
+  if (me) {
+    const s = fillPlayers(el("select"), "Whole party", o.assignee); s.setAttribute("aria-label", `Assigned to (${o.text})`)
+    s.onchange = () => updateDoc(doc(db, "objectives", o.id), { assignee: s.value || null, assigneeName: playerName(s.value) || null })
+    assign = el("span", "sel plain assign"); assign.append(s)
+  } else assign = el("span", "who assign", o.assigneeName || "Whole party")
+  li.append(mark, t, assign)
+  if (me && (o.owner === me.uid || me.gm)) {
+    const x = el("button", "x"); x.type = "button"; x.setAttribute("aria-label", `Delete quest: ${o.text}`); x.append(icon.x())
+    x.onclick = () => confirm("Delete this quest for the whole party?") && deleteDoc(doc(db, "objectives", o.id))
+    li.append(x)
+  } else li.append(el("span"))
+  return li
+}
+
+function renderObjs() {
+  const lists = { party: $("party"), partydone: $("partydone"), priv: $("priv") }
+  Object.values(lists).forEach((ul) => ul.replaceChildren())
+  if (!questsLoaded) { for (let i = 0; i < 3; i++) lists.party.append(el("li", "skel")); return }
+  // Filtering by a player shows quests they plotted or are assigned to.
+  const fUser = $("ofilter").value, fName = playerName(fUser)
+  const all = [...objs.values()].sort((a, b) => (a.created?.toMillis?.() ?? Infinity) - (b.created?.toMillis?.() ?? Infinity))
+  questRef = new Map(all.map((o, i) => [o.id, `Q-${String(i + 1).padStart(2, "0")}`])) // stable by plotting order, like E-refs
+  const shown = all.filter((o) => !fUser || o.assignee === fUser || o.ownerName === fName)
+  const party = shown.filter((o) => !o.private)
+  const open = party.filter((o) => !o.done), done = party.filter((o) => o.done)
+  const allParty = all.filter((o) => !o.private)
+  $("sheetSub").textContent = `${allParty.filter((o) => !o.done).length} open · ${allParty.filter((o) => o.done).length} completed`
+
+  if (!open.length) {
+    lists.party.append(el("li", "empty", fName ? `Nothing open for ${fName}.` : me ? "No open quests. Plot the party's next goal above." : "No open quests right now."))
+  }
+  open.forEach((o) => lists.party.append(questRow(o)))
+  $("donehead").hidden = !done.length
+  $("donelabel").textContent = `Completed · ${done.length}`
+  done.forEach((o) => lists.partydone.append(questRow(o)))
+
+  const priv = shown.filter((o) => o.private)
+  if (!priv.length) lists.priv.append(el("li", "empty", "No private quests."))
+  priv.sort((a, b) => a.done - b.done).forEach((o) => lists.priv.append(questRow(o)))
 }
 
 $("addobj").onsubmit = (e) => {
@@ -322,7 +658,7 @@ $("addobj").onsubmit = (e) => {
     text, done: false, private: requireLogin && $("opriv").checked, owner: me.uid, ownerName: me.name,
     assignee, assigneeName: playerName(assignee) || null, created: serverTimestamp(),
   })
-  $("otext").value = ""; $("oassign").value = ""
+  $("otext").value = ""; $("oassign").value = ""; $("otext").focus()
 }
 </script>
 </body>
