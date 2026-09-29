@@ -204,8 +204,8 @@
   .f { display: grid; gap: var(--s-1); align-content: start; position: relative; }
   .f .field { min-height: 2.5rem; }
   .f textarea.field { min-height: 5rem; padding: var(--s-2); border: 1px solid var(--rule); border-radius: 3px; background: var(--ground-2); resize: vertical; line-height: 1.5; }
-  .f .sel { display: flex; }
-  .f .sel select { width: 100%; }
+  .f .sel, .row .sel { display: flex; }
+  .f .sel select, .row .sel select { width: 100%; }
   .fgrid .namef { grid-column: span 2; }
   .fgrid .namef .field { font: 600 var(--t-md)/1.2 var(--display); }
   .tier { position: absolute; right: var(--s-1); top: 0; font: 600 var(--t-xs)/1.2 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--hydro); }
@@ -667,10 +667,6 @@ let SRD = null
 const srdReady = view === "sheets" ? fetch("srd.json").then((r) => r.json()).then((j) => (SRD = j)).catch(() => null) : null
 const srdFind = (group, name) => Object.keys(SRD?.[group] || {}).find((k) => k.toLowerCase() === String(name ?? "").trim().toLowerCase())
 const srdItem = (group, name) => SRD?.[group].find((x) => x.name.toLowerCase() === String(name ?? "").trim().toLowerCase())
-function datalist(id, names) {
-  const e = $(id) || Object.assign(document.body.appendChild(el("datalist")), { id })
-  e.replaceChildren(...names.map((n) => new Option(n)))
-}
 
 async function startSheets() {
   $("newchar").hidden = !me
@@ -729,6 +725,22 @@ function choice(d, key, label, names, pick, off) {
   wrap.append(sel); w.append(el("span", "label", label), wrap)
   return w
 }
+// SRD weapon/armor drop-down grouped by slot and tier; "Custom..." falls back to free text (also for names not in the SRD).
+const isCustom = (it, group) => it.custom || (it.name && !srdItem(group, it.name))
+function gearSelect(it, group, pick, redraw, cls = "") {
+  const wrap = el("span", "sel " + cls), sel = el("select", "field"), groups = new Map()
+  sel.append(new Option(group === "armor" ? "Choose armor…" : "Choose weapon…", ""))
+  for (const x of SRD[group]) {
+    const label = (x.slot ? `${x.slot === "primary" ? "Primary" : "Secondary"} · ` : "") + `Tier ${x.tier}`
+    if (!groups.has(label)) { const og = Object.assign(el("optgroup"), { label }); sel.append(og); groups.set(label, og) }
+    groups.get(label).append(new Option(x.name, x.name))
+  }
+  sel.append(new Option("Custom…", "__custom"))
+  sel.value = it.name || ""
+  sel.onchange = () => { if (sel.value === "__custom") { it.custom = true; it.name = ""; queueSheetSave(); redraw() } else { it.custom = false; pick(it, sel.value) } }
+  wrap.append(sel)
+  return wrap
+}
 const btn = (cls, text, onclick, aria) => { const b = el("button", cls, text); b.type = "button"; b.onclick = onclick; if (aria) b.setAttribute("aria-label", aria); return b }
 const panel = (title, ...kids) => { const p = el("section", "panel"); p.append(el("h3", "label", title), ...kids); return p }
 
@@ -756,16 +768,16 @@ function track(d, key, label, dflt, shape, tone) {
 }
 
 // Editable list of rows (weapons, experiences): cols = [[key, placeholder, className, num]...]
-function list(d, key, cols, addText, aria, { dl, pick } = {}) {
+function list(d, key, cols, addText, aria, { gear, pick } = {}) {
   const wrap = el("div", "rows"), arr = (d[key] ||= [])
   const draw = () => {
     wrap.replaceChildren(...arr.map((it, idx) => {
       const r = el("div", "row")
       cols.forEach(([k, ph, cls, num]) => {
+        if (gear && SRD && k === "name" && !isCustom(it, gear)) { const g = gearSelect(it, gear, (x, v) => { pick(x, v); draw() }, draw, cls); g.firstChild.setAttribute("aria-label", `${aria} ${idx + 1}`); r.append(g); return }
         const i = el("input", "field " + cls); i.placeholder = ph; i.setAttribute("aria-label", `${aria} ${idx + 1} ${ph.toLowerCase()}`)
         if (num) i.type = "number"
         i.value = it[k] ?? ""; i.oninput = () => put(it, k, num && i.value !== "" ? +i.value : i.value)
-        if (dl && SRD && k === "name") { i.setAttribute("list", dl); i.addEventListener("change", () => { pick(it, i.value); draw() }) }
         r.append(i)
       })
       r.append(btn("x", null, () => { arr.splice(idx, 1); queueSheetSave(); draw() }, `Remove ${aria} ${idx + 1}`))
@@ -819,8 +831,7 @@ function openSheet(id) {
   }
   const subsOf = () => SRD?.classes[srdFind("classes", d.cls)]?.subclasses || Object.values(SRD?.classes || {}).flatMap((c) => c.subclasses)
   if (SRD) {
-    datalist("dl-armor", SRD.armor.map((x) => x.name)); datalist("dl-weapon", SRD.weapons.map((x) => x.name))
-  }
+      }
   const armor = (d.armorItem ||= {})
 
   const setLevel = (v) => { d.lvl = v === "" ? "" : +v; applyArmor(); queueSheetSave(); again() }
@@ -849,7 +860,10 @@ function openSheet(id) {
   }
   const shields = el("div", "shields"); shields.append(shield(d, "evasion", "Evasion"), shield(d, "armor", "Armor"))
 
-  const armorCard = el("div", "fgrid"); armorCard.append(field(armor, "name", "Armor", { list: "dl-armor", pick: pickArmor }), field(armor, "note", "Tier · features", { cls: "wide" }))
+  const armorCard = el("div", "fgrid"); if (SRD && !isCustom(armor, "armor")) { const w = el("label", "f"); w.append(el("span", "label", "Armor"), gearSelect(armor, "armor", (_, v) => pickArmor(v), again)); armorCard.append(w) }
+  else armorCard.append(field(armor, "name", "Armor"))
+  armorCard.append(field(armor, "note", "Tier · features", { cls: "wide" }))
+  if (SRD && isCustom(armor, "armor")) armorCard.append(btn("btn-text", "Pick from SRD list", () => { armor.custom = false; armor.name = ""; delete armor.base; queueSheetSave(); again() }))
 
   // Read-only SRD feature cards for the chosen class, subclass, ancestry and community.
   const feats = el("div", "feats"), unlock = (d.unlock ||= {}), unlockRow = el("div", "conds")
@@ -880,7 +894,7 @@ function openSheet(id) {
     panel("Armor & stats", shields, track(d, "slots", "Armor slots", 4, "shield", "hydro"), thresholds,
       track(d, "hp", "HP", 6, "heart", "danger"), track(d, "stress", "Stress", 6, "diamond", "terrain"), track(d, "hope", "Hope", 6, "diamond", "hydro"), conds),
     panel("Weapons & armor", track(d, "prof", "Proficiency", 6, "diamond", "ink-2"),
-      list(d, "weapons", [["name", "Weapon", "wname"], ["trait", "Trait · range", "wtrait"], ["dmg", "Damage", "wdmg"]], "Add weapon", "Weapon", { dl: "dl-weapon", pick: pickWeapon }), armorCard, field(d, "cards", "Domain cards", { area: 1, cls: "wide" })),
+      list(d, "weapons", [["name", "Weapon", "wname"], ["trait", "Trait · range", "wtrait"], ["dmg", "Damage", "wdmg"]], "Add weapon", "Weapon", { gear: "weapons", pick: pickWeapon }), armorCard, field(d, "cards", "Domain cards", { area: 1, cls: "wide" })),
     panel("Experiences", list(d, "experiences", [["name", "Experience", "wname"], ["mod", "+2", "wmod", 1]], "Add experience", "Experience"),
       field(d, "gold", "Gold", { num: 1 }), field(d, "inv", "Inventory", { area: 1 }), field(d, "notes", "Notes", { area: 1 })),
     Object.assign(panel("Features", unlockRow, feats), { className: "panel fullw" }),
