@@ -272,7 +272,7 @@
       <div id="view" hidden>
         <div class="note-head">
           <div><div class="label">Ref</div><div class="v num" id="vref"></div></div>
-          <div><div class="label">Surveyor</div><div class="v party-name" id="vauthor"></div></div>
+          <div><div class="label">Player</div><div class="v party-name" id="vauthor"></div></div>
           <div><div class="label">Recorded</div><div class="v num" id="vdate"></div></div>
         </div>
         <h2 class="note-title" id="vtitle"></h2>
@@ -287,7 +287,7 @@
       <div id="edit" hidden>
         <div class="note-head">
           <div><div class="label">Ref</div><div class="v num" id="eref"></div></div>
-          <div><div class="label">Surveyor</div><div class="v party-name" id="eauthor"></div></div>
+          <div><div class="label">Player</div><div class="v party-name" id="eauthor"></div></div>
           <div><div class="label">Status</div><div class="v" id="nstatus" role="status"></div></div>
         </div>
         <input class="ed-title" type="text" id="ntitle" placeholder="Title this entry" aria-label="Entry title" />
@@ -428,7 +428,7 @@ function fillPlayers(sel, firstLabel, value = "") {
 
 fillPlayers($("luser"), "Choose your name")
 if (!players.length) { $("luser").parentElement.hidden = true; $("luser").required = false; $("lusertext").hidden = false; $("lusertext").required = true }
-fillPlayers($("nfilter"), "All surveyors").onchange = () => renderNoteList()
+fillPlayers($("nfilter"), "All players").onchange = () => renderNoteList()
 fillPlayers($("ofilter"), "Everyone").onchange = () => renderObjs()
 fillPlayers($("oassign"), "Whole party")
 
@@ -451,7 +451,7 @@ onAuthStateChanged(auth, async (user) => {
     const username = user.email.split("@")[0]
     if (m?.exists()) me = { uid: user.uid, user: username, name: m.data().name || username, gm: m.data().gm === true }
     const who = $("who"); who.replaceChildren()
-    if (me) who.append("Surveyor ", el("b", null, me.name), me.gm ? " · GM" : "")
+    if (me) who.append("Player ", el("b", null, me.name), me.gm ? " · GM" : "")
     else who.textContent = `${username} isn't on the party list yet. Ask your GM to add you.`
   }
   $("login").hidden = !!user
