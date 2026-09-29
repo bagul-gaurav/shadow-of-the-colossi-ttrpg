@@ -96,6 +96,9 @@
   .scale text { font: 600 10px var(--display); letter-spacing: .1em; fill: var(--ink-2); text-transform: uppercase; }
   .surveyor { display: flex; align-items: center; gap: var(--s-2) var(--s-3); flex-wrap: wrap; }
   .surveyor .who { font-size: var(--t-sm); color: var(--ink-2); }
+  /* Log out pins to the sheet's top-right corner; .sheet-row is the positioned ancestor. */
+  .sheet-row { padding-top: 1.75rem; }
+  #signout { position: absolute; top: 0; right: 0; }
   .surveyor .who b, .party-name, .note-head .v.party-name { color: var(--hydro); font-weight: 600; font-style: italic; }
   .login { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); align-items: end; margin-top: var(--s-5); }
   .login .sel, .login .field { flex: 1 1 9rem; }
