@@ -1,7 +1,5 @@
 ---
 title: Character Sheets
-aliases:
-  - Sheets
 ---
 Your Daggerheart character sheets. Log in to see and edit yours; only you and the GM can see them.
 
