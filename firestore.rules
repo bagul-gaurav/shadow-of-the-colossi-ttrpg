@@ -34,5 +34,14 @@ service cloud.firestore {
                         || (resource.data.private == false && request.resource.data.private == false));
       allow delete: if member() && (resource.data.owner == request.auth.uid || gm());
     }
+
+    // Character sheets: owner and GM only, in both modes.
+    match /sheets/{id} {
+      allow read: if member() && (resource.data.owner == request.auth.uid || gm());
+      allow create: if member() && request.resource.data.owner == request.auth.uid;
+      allow update: if member() && (resource.data.owner == request.auth.uid || gm())
+                    && request.resource.data.owner == resource.data.owner;
+      allow delete: if member() && (resource.data.owner == request.auth.uid || gm());
+    }
   }
 }

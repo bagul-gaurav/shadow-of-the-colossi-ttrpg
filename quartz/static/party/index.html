@@ -193,6 +193,25 @@
   .mark[aria-pressed="true"] .ink { transform: scaleY(1); }
   .mark[aria-pressed="true"] .pt { opacity: 1; }
 
+  /* Character sheet: ruled fields, trait cells, tick-box tracks. */
+  .sform { display: grid; gap: var(--s-5); margin-top: var(--s-5); }
+  .fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--s-3) var(--s-4); }
+  .f { display: grid; gap: var(--s-1); align-content: start; }
+  .f .field { min-height: 2.5rem; }
+  .f textarea.field { min-height: 6rem; padding: var(--s-2); border: 1px solid var(--rule); border-radius: 3px; background: var(--ground-2); resize: vertical; line-height: 1.5; }
+  .f.wide { grid-column: 1 / -1; }
+  .traits { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: var(--s-2); }
+  .trait { padding: var(--s-2) var(--s-3); border: 1px solid var(--rule); border-top: 2px solid var(--terrain); border-radius: 3px; text-align: center; }
+  .trait .field { text-align: center; font: 600 var(--t-lg)/1 var(--display); }
+  .tracks { display: grid; gap: var(--s-3); }
+  .track { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
+  .track .label { flex: 0 0 6.5rem; }
+  .boxes { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+  .box { width: 2.75rem; height: 2.75rem; display: grid; place-items: center; background: none; border: 0; cursor: pointer; }
+  .box::before { content: ""; width: 1.25rem; height: 1.25rem; border: 1.6px solid var(--ink-2); border-radius: 2px; transition: background-color .15s var(--ease), border-color .15s var(--ease); }
+  .box[aria-pressed="true"]::before { background: var(--hydro); border-color: var(--hydro); }
+  .track .max { width: 3.5rem; min-height: 2rem; text-align: center; color: var(--ink-3); font-size: var(--t-sm); }
+
   @media (min-width: 640px) {
     .split { grid-template-columns: minmax(12rem, 34%) 1fr; gap: var(--s-6); align-items: start; }
     .sheet-row { grid-template-columns: 1fr auto; align-items: end; }
@@ -232,6 +251,7 @@
         <span class="who" id="who"></span>
         <button class="btn btn-text" id="signout" type="button">Log out</button>
         <button class="btn btn-over" id="newnote" type="button" hidden>New entry</button>
+        <button class="btn btn-over" id="newchar" type="button" hidden>New character</button>
       </div>
     </div>
   </div>
@@ -247,7 +267,7 @@
   // Name the sheet before the Firebase modules finish loading, so the title never flashes wrong.
   ;(function () {
     var h = location.hash.slice(1), quests = h === "quests" || h === "objectives"
-    document.getElementById("sheetTitle").textContent = quests ? "Quests" : "The party's journal"
+    document.getElementById("sheetTitle").textContent = h === "sheets" || h === "sheet" ? "Character sheets" : quests ? "Quests" : "The party's journal"
     try { var t = parent.document.documentElement.getAttribute("saved-theme"); if (t) document.documentElement.dataset.theme = t } catch (e) {}
   })()
 </script>
@@ -298,6 +318,34 @@
           <span class="status"></span>
           <button class="btn btn-text" id="nclose" type="button">Close</button>
           <button class="btn btn-ink" id="nsave" type="button">Save</button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="sheets" hidden>
+  <div class="split" id="ssplit">
+    <div class="legend">
+      <div class="legend-head"><span class="label">Characters</span></div>
+      <ul class="entries" id="slist"></ul>
+    </div>
+    <article class="reader" id="sreader">
+      <div id="sblank" class="uncharted">
+        <svg class="contours" aria-hidden="true"></svg>
+        <div class="copy"><h2 class="lettering">Unsheeted</h2><p id="sblankText">Pick a character.</p></div>
+      </div>
+      <div id="sedit" hidden>
+        <div class="note-head">
+          <div><div class="label">Ref</div><div class="v num" id="sref"></div></div>
+          <div><div class="label">Player</div><div class="v party-name" id="sowner"></div></div>
+          <div><div class="label">Status</div><div class="v" id="sstatus" role="status"></div></div>
+        </div>
+        <div class="sform" id="sform"></div>
+        <div class="note-actions">
+          <button class="btn btn-text btn-danger" id="sdelete" type="button">Delete</button>
+          <span class="status"></span>
+          <button class="btn btn-text only-narrow" id="sclose" type="button">Back to characters</button>
         </div>
       </div>
     </article>
@@ -363,7 +411,7 @@ const svgEl = (tag, attrs = {}) => { const e = document.createElementNS("http://
 const when = (ts) => ts?.toDate ? ts.toDate().toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "just now"
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`
 const hash = location.hash.slice(1)
-const view = hash === "quests" || hash === "objectives" ? "quests" : "journal"
+const view = hash === "quests" || hash === "objectives" ? "quests" : hash === "sheets" || hash === "sheet" ? "sheets" : "journal"
 const wide = () => matchMedia("(min-width: 640px)").matches
 
 // Quartz's in-site navigation only changes this iframe's #hash between pages, which doesn't reload it.
@@ -393,7 +441,7 @@ function drawContours(svg, { rings = 9, seed = 1, w = 360, h = 260, cx = w * 0.6
     svg.append(svgEl("path", { d: `M${pts.join("L")}Z`, fill: "none", stroke: "var(--contour)", "stroke-width": k % 4 === 0 ? 1.3 : 0.7 }))
   }
 }
-drawContours($("sheetContours"), { seed: view === "journal" ? 1.2 : 4.1 })
+drawContours($("sheetContours"), { seed: { journal: 1.2, quests: 4.1, sheets: 2.9 }[view] })
 document.querySelectorAll(".uncharted .contours").forEach((s) => drawContours(s, { rings: 11, seed: 2.6, w: 520, h: 360, cx: 260, cy: 180 }))
 
 const icon = {
@@ -456,11 +504,12 @@ onAuthStateChanged(auth, async (user) => {
   }
   $("login").hidden = !!user
   $("whobar").hidden = !user
-  const canSee = !requireLogin || !!me
+  const canSee = (!requireLogin && view !== "sheets") || !!me // sheets are always owner + GM only
   $("journal").hidden = view !== "journal" || !canSee
   $("quests").hidden = view !== "quests" || !canSee
-  if (!canSee) { $("sheetSub").textContent = "Log in to read the party's survey."; return }
-  view === "journal" ? startNotes() : startObjectives()
+  $("sheets").hidden = view !== "sheets" || !canSee
+  if (!canSee) { $("sheetSub").textContent = view === "sheets" ? "Log in to see your character sheets." : "Log in to read the party's survey."; return }
+  ;({ journal: startNotes, quests: startObjectives, sheets: startSheets })[view]()
 })
 
 // ---------- Journal: everyone reads every entry; author or GM edits ----------
@@ -567,6 +616,133 @@ $("ndelete").onclick = async () => {
   clearTimeout(saveTimer); saveTimer = null
   const id = openId; openId = null
   await deleteDoc(doc(db, "notes", id)); closeNote()
+}
+
+// ---------- Character sheets: owner + GM only (see the sheets block in the Firestore rules) ----------
+const SHEET = {
+  head: [["name", "Name"], ["cls", "Class"], ["sub", "Subclass"], ["anc", "Ancestry"], ["com", "Community"], ["lvl", "Level", 1]],
+  traits: ["Agility", "Strength", "Finesse", "Instinct", "Presence", "Knowledge"],
+  stats: [["evasion", "Evasion"], ["armor", "Armor score"], ["major", "Major threshold"], ["severe", "Severe threshold"], ["gold", "Gold"]],
+  tracks: [["hp", "Hit points", 6], ["stress", "Stress", 6], ["hope", "Hope", 6], ["slots", "Armor slots", 3]],
+  areas: [["exp", "Experiences"], ["weap", "Weapons"], ["cards", "Domain cards"], ["inv", "Inventory"], ["notes", "Notes"]],
+}
+let sheets = [], openSid = null, sheetTimer = null, sheetsLoaded = false, sheetRef = new Map()
+
+function startSheets() {
+  $("newchar").hidden = !me
+  sheetsLoaded = false
+  closeSheet()
+  const col = collection(db, "sheets")
+  // Queries must match the rules: players fetch only their own, the GM fetches all.
+  unsubs.push(onSnapshot(me.gm ? col : query(col, where("owner", "==", me.uid)), (snap) => {
+    const cur = new Map(sheets.map((x) => [x.id, x]))
+    sheets = snap.docs.map((d) => ({ id: d.id, ...d.data(), ...(d.id === openSid && cur.get(d.id) ? { data: cur.get(d.id).data } : {}) }))
+      .sort((a, b) => (a.created?.toMillis?.() ?? Infinity) - (b.created?.toMillis?.() ?? Infinity))
+    sheetRef = new Map(sheets.map((x, i) => [x.id, `C-${String(i + 1).padStart(2, "0")}`]))
+    sheetsLoaded = true
+    $("sheetSub").textContent = plural(sheets.length, "character", "characters")
+    renderSheetList()
+    if (!openSid && sheets.length && wide()) openSheet(sheets[0].id)
+  }))
+}
+
+function renderSheetList() {
+  const ul = $("slist"); ul.replaceChildren()
+  if (!sheetsLoaded) { for (let i = 0; i < 2; i++) ul.append(el("li", "skel")); return }
+  if (!sheets.length) ul.append(el("li", "empty", "No characters yet. Use New character to start one."))
+  for (const c of sheets) {
+    const b = el("button", "entry"); b.type = "button"
+    b.setAttribute("aria-current", c.id === openSid ? "true" : "false")
+    const d = c.data || {}
+    b.append(el("span", "ref num", sheetRef.get(c.id)), el("span", "t", d.name || "Unnamed character"), el("span", "m", [d.cls, d.lvl && `Level ${d.lvl}`, me.gm && c.ownerName].filter(Boolean).join(" · ") || "Blank sheet"))
+    b.onclick = () => openSheet(c.id)
+    const li = el("li"); li.append(b); ul.append(li)
+  }
+  $("sblankText").textContent = sheets.length ? "Pick a character." : "Use New character to begin."
+}
+
+function field(d, key, label, { num, area, cls } = {}) {
+  const w = el("label", "f " + (cls || "")), i = el(area ? "textarea" : "input", "field")
+  if (num) i.type = "number"
+  i.value = d[key] ?? ""
+  i.oninput = () => { d[key] = num && i.value !== "" ? +i.value : i.value; queueSheetSave() }
+  w.append(el("span", "label", label), i)
+  return w
+}
+
+function track(d, key, label, dflt) {
+  const row = el("div", "track"), boxes = el("div", "boxes"), max = el("input", "field max")
+  max.type = "number"; max.min = 1; max.max = 20; max.setAttribute("aria-label", `${label} maximum`)
+  max.value = d[key + "Max"] ?? dflt
+  const draw = () => {
+    const m = Math.min(20, Math.max(1, +max.value || dflt)), n = Math.min(d[key] || 0, m)
+    boxes.replaceChildren(...Array.from({ length: m }, (_, i) => {
+      const b = el("button", "box"); b.type = "button"; b.setAttribute("aria-pressed", String(i < n)); b.setAttribute("aria-label", `${label} ${i + 1}`)
+      b.onclick = () => { d[key] = n === i + 1 ? i : i + 1; queueSheetSave(); draw() }
+      return b
+    }))
+  }
+  max.oninput = () => { d[key + "Max"] = +max.value || dflt; queueSheetSave(); draw() }
+  draw()
+  row.append(el("span", "label", label), boxes, max)
+  return row
+}
+
+function openSheet(id) {
+  flushSheetSave()
+  const c = sheets.find((x) => x.id === id); if (!c) return
+  openSid = id
+  const d = c.data ||= {}, f = $("sform")
+  $("ssplit").classList.add("open")
+  $("sblank").hidden = true; $("sedit").hidden = false
+  $("sref").textContent = sheetRef.get(id) || "New"; $("sowner").textContent = c.ownerName; $("sstatus").textContent = `Saved ${when(c.updated)}`
+  const grid = (...kids) => { const g = el("div", "fgrid"); g.append(...kids); return g }
+  const traits = el("div", "traits")
+  SHEET.traits.forEach((t) => { const w = field(d, t.toLowerCase(), t, { num: 1 }); w.classList.add("trait"); traits.append(w) })
+  const tracks = el("div", "tracks"); SHEET.tracks.forEach(([k, l, m]) => tracks.append(track(d, k, l, m)))
+  f.replaceChildren(
+    grid(...SHEET.head.map(([k, l, n]) => field(d, k, l, { num: n }))),
+    traits,
+    grid(...SHEET.stats.map(([k, l]) => field(d, k, l, { num: 1 }))),
+    tracks,
+    grid(...SHEET.areas.map(([k, l]) => field(d, k, l, { area: 1, cls: "wide" }))),
+  )
+  renderSheetList()
+  if (!wide()) $("sreader").scrollIntoView({ block: "start" })
+}
+
+function closeSheet() {
+  flushSheetSave(); openSid = null
+  $("ssplit").classList.remove("open")
+  $("sedit").hidden = true; $("sblank").hidden = false
+  renderSheetList()
+}
+
+function queueSheetSave() { $("sstatus").textContent = "Saving…"; clearTimeout(sheetTimer); sheetTimer = setTimeout(flushSheetSave, 800) }
+function flushSheetSave() {
+  if (!sheetTimer || !openSid) return
+  clearTimeout(sheetTimer); sheetTimer = null
+  const id = openSid, c = sheets.find((x) => x.id === id); if (!c) return
+  updateDoc(doc(db, "sheets", id), { data: c.data, updated: serverTimestamp() })
+    .then(() => { if (openSid === id) $("sstatus").textContent = "Saved" })
+    .catch((e) => { $("sstatus").textContent = "Not saved. " + (e.code === "permission-denied" ? "You can only edit your own sheets." : "Check your connection.") })
+}
+addEventListener("pagehide", () => flushSheetSave())
+
+$("sclose").onclick = closeSheet
+$("newchar").onclick = async () => {
+  $("newchar").disabled = true
+  try {
+    const ref = await addDoc(collection(db, "sheets"), { data: {}, owner: me.uid, ownerName: me.name, created: serverTimestamp(), updated: serverTimestamp() })
+    if (!sheets.some((x) => x.id === ref.id)) sheets.push({ id: ref.id, data: {}, owner: me.uid, ownerName: me.name })
+    openSheet(ref.id)
+  } finally { $("newchar").disabled = false }
+}
+$("sdelete").onclick = async () => {
+  if (!openSid || !confirm("Delete this character sheet? This can't be undone.")) return
+  clearTimeout(sheetTimer); sheetTimer = null
+  const id = openSid; openSid = null
+  await deleteDoc(doc(db, "sheets", id)); closeSheet()
 }
 
 // ---------- Quests: party-wide; private ones (owner + GM only) when requireLogin is on ----------
