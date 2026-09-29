@@ -245,6 +245,15 @@
   .row .wmod { grid-column: 2; grid-row: 1; width: 4rem; text-align: center; }
   .row:has(.wmod) { grid-template-columns: 1fr 4rem auto; }
   .row:has(.wmod) .wname { grid-column: 1; } .row:has(.wmod) .wmod { grid-column: 2; } .row:has(.wmod) .x { grid-column: 3; }
+  .panel.fullw { grid-column: 1 / -1; }
+  .feats { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: var(--s-2); align-items: start; }
+  .fcard { border: 1px solid var(--rule); border-radius: 3px; }
+  .fcard summary { padding: var(--s-3); cursor: pointer; font: 600 var(--t-sm)/1.3 var(--display); letter-spacing: .08em; text-transform: uppercase; }
+  .fcard[open] summary { border-bottom: 1px solid var(--rule); }
+  .fbody { padding: var(--s-3); }
+  .fbody p { margin: 0 0 var(--s-2); font-size: var(--t-sm); line-height: 1.5; color: var(--ink-2); }
+  .fbody b { color: var(--ink); }
+  .row .feat { grid-column: 1 / -1; margin: 0; font-size: var(--t-xs); color: var(--ink-3); }
   .listwrap { display: grid; gap: var(--s-2); justify-items: start; }
   .listwrap .btn { min-height: 2.25rem; padding: 0 var(--s-3); }
 
@@ -651,9 +660,21 @@ const PIP = { // 24x24 paths, filled when marked
 const pipSvg = (shape) => { const s = svgEl("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }); s.append(svgEl("path", { d: PIP[shape] })); return s }
 
 let sheets = [], openSid = null, sheetTimer = null, sheetsLoaded = false
+// Daggerheart SRD data (classes, ancestries, communities, weapons, armor) for pick lists and autofill; the sheet still works without it.
+let SRD = null
+const srdReady = view === "sheets" ? fetch("srd.json").then((r) => r.json()).then((j) => (SRD = j)).catch(() => null) : null
+const srdFind = (group, name) => Object.keys(SRD?.[group] || {}).find((k) => k.toLowerCase() === String(name ?? "").trim().toLowerCase())
+const srdItem = (group, name) => SRD?.[group].find((x) => x.name.toLowerCase() === String(name ?? "").trim().toLowerCase())
+function datalist(id, names) {
+  const e = $(id) || Object.assign(document.body.appendChild(el("datalist")), { id })
+  e.replaceChildren(...names.map((n) => new Option(n)))
+}
 
-function startSheets() {
+async function startSheets() {
   $("newchar").hidden = !me
+  await srdReady
+  if (!me) return // logged out while the SRD was loading
+
   sheetsLoaded = false
   closeSheet()
   const col = collection(db, "sheets")
@@ -686,10 +707,12 @@ function renderSheetList() {
 
 // Small builders: every input writes straight into d and queues a save.
 const put = (d, key, v) => { d[key] = v; queueSheetSave() }
-function field(d, key, label, { num, area, cls, ph } = {}) {
+function field(d, key, label, { num, area, cls, ph, list: dl, pick } = {}) {
   const w = el("label", "f " + (cls || "")), i = el(area ? "textarea" : "input", "field")
   if (num) i.type = "number"
   if (ph) i.placeholder = ph
+  if (dl && SRD) i.setAttribute("list", dl)
+  if (pick) i.addEventListener("change", () => pick(i.value))
   i.value = d[key] ?? ""
   i.oninput = () => put(d, key, num && i.value !== "" ? +i.value : i.value)
   w.append(el("span", "label", label), i)
@@ -722,7 +745,7 @@ function track(d, key, label, dflt, shape, tone) {
 }
 
 // Editable list of rows (weapons, experiences): cols = [[key, placeholder, className, num]...]
-function list(d, key, cols, addText, aria) {
+function list(d, key, cols, addText, aria, { dl, pick } = {}) {
   const wrap = el("div", "rows"), arr = (d[key] ||= [])
   const draw = () => {
     wrap.replaceChildren(...arr.map((it, idx) => {
@@ -731,10 +754,12 @@ function list(d, key, cols, addText, aria) {
         const i = el("input", "field " + cls); i.placeholder = ph; i.setAttribute("aria-label", `${aria} ${idx + 1} ${ph.toLowerCase()}`)
         if (num) i.type = "number"
         i.value = it[k] ?? ""; i.oninput = () => put(it, k, num && i.value !== "" ? +i.value : i.value)
+        if (dl && SRD && k === "name") { i.setAttribute("list", dl); i.addEventListener("change", () => { pick(it, i.value); draw() }) }
         r.append(i)
       })
       r.append(btn("x", null, () => { arr.splice(idx, 1); queueSheetSave(); draw() }, `Remove ${aria} ${idx + 1}`))
       r.lastChild.append(icon.x())
+      if (it.feat) r.append(el("p", "feat", it.feat))
       return r
     }))
   }
@@ -759,13 +784,43 @@ function openSheet(id) {
   $("sblank").hidden = true; $("sedit").hidden = false
   $("sstatus").textContent = c.updated ? `Saved ${when(c.updated)}` : ""
 
-  const level = field(d, "lvl", "Level", { num: 1 }), tier = el("span", "tier num")
+  const again = () => openSheet(id)
+  const applyArmor = () => { const b = d.armorItem?.base; if (b) { const l = +d.lvl || 0; d.major = b[0] + l; d.severe = b[1] + l } } // SRD: thresholds = base + level
+  const pickClass = (v) => {
+    const k = srdFind("classes", v); if (!k) return
+    const c = SRD.classes[k]
+    Object.assign(d, { cls: k, evasion: c.evasion, hpMax: c.hp })
+    if (!c.subclasses.some((x) => x.name === d.sub)) d.sub = ""
+    queueSheetSave(); again()
+  }
+  const pickSub = (v) => { const x = subsOf().find((s) => s.name.toLowerCase() === v.trim().toLowerCase()); if (x) d.sub = x.name; queueSheetSave(); renderFeatures() }
+  const pickKin = (group, key) => (v) => { const k = srdFind(group, v); if (k) d[key] = k; queueSheetSave(); renderFeatures() }
+  const pickArmor = (v) => {
+    const a = srdItem("armor", v); if (!a) return
+    Object.assign(armor, { name: a.name, base: [a.major, a.severe], note: `Tier ${a.tier}${a.feature ? " · " + a.feature : ""}` })
+    d.armor = d.slotsMax = a.score; applyArmor(); queueSheetSave(); again()
+  }
+  const pickWeapon = (it, v) => {
+    const w = srdItem("weapons", v); if (!w) return
+    Object.assign(it, { name: w.name, trait: `${w.trait} · ${w.range}`, dmg: w.damage, feat: [w.burden, w.feature].filter(Boolean).join(" · ") })
+    queueSheetSave()
+  }
+  const subsOf = () => SRD?.classes[srdFind("classes", d.cls)]?.subclasses || Object.values(SRD?.classes || {}).flatMap((c) => c.subclasses)
+  if (SRD) {
+    datalist("dl-cls", Object.keys(SRD.classes)); datalist("dl-sub", subsOf().map((x) => x.name))
+    datalist("dl-anc", Object.keys(SRD.ancestries)); datalist("dl-com", Object.keys(SRD.communities))
+    datalist("dl-armor", SRD.armor.map((x) => x.name)); datalist("dl-weapon", SRD.weapons.map((x) => x.name))
+  }
+  const armor = (d.armorItem ||= {})
+
+  const level = field(d, "lvl", "Level", { num: 1, pick: () => { applyArmor(); queueSheetSave(); again() } }), tier = el("span", "tier num")
   const setTier = () => { const l = +d.lvl || 0; tier.textContent = l ? `Tier ${l >= 8 ? 4 : l >= 5 ? 3 : l >= 2 ? 2 : 1}` : "" }
   level.append(tier); level.querySelector("input").addEventListener("input", setTier); setTier()
   const head = el("div", "fgrid")
   const nameField = field(d, "name", "Name", { cls: "namef" })
   nameField.querySelector("input").addEventListener("input", renderSheetList)
-  head.append(nameField, field(d, "cls", "Class"), field(d, "sub", "Subclass"), field(d, "anc", "Ancestry"), field(d, "com", "Community"), level)
+  head.append(nameField, field(d, "cls", "Class", { list: "dl-cls", pick: pickClass }), field(d, "sub", "Subclass", { list: "dl-sub", pick: pickSub }),
+    field(d, "anc", "Ancestry", { list: "dl-anc", pick: pickKin("ancestries", "anc") }), field(d, "com", "Community", { list: "dl-com", pick: pickKin("communities", "com") }), level)
 
   const traits = el("div", "traits")
   TRAITS.forEach((t) => { const w = field(d, t.toLowerCase(), t, { num: 1, ph: "0" }); w.classList.add("trait"); traits.append(w) })
@@ -782,8 +837,30 @@ function openSheet(id) {
   }
   const shields = el("div", "shields"); shields.append(shield(d, "evasion", "Evasion"), shield(d, "armor", "Armor"))
 
-  const armor = (d.armorItem ||= {})
-  const armorCard = el("div", "fgrid"); armorCard.append(field(armor, "name", "Armor"), field(armor, "note", "Tier · features"))
+  const armorCard = el("div", "fgrid"); armorCard.append(field(armor, "name", "Armor", { list: "dl-armor", pick: pickArmor }), field(armor, "note", "Tier · features", { cls: "wide" }))
+
+  // Read-only SRD feature cards for the chosen class, subclass, ancestry and community.
+  const feats = el("div", "feats"), unlock = (d.unlock ||= {}), unlockRow = el("div", "conds")
+  const para = (t) => { const p = el("p"), m = t.match(/^(\u2022 )?([A-Z][^:.]{1,40}):\s([\s\S]*)$/); if (m) p.append(m[1] || "", el("b", null, m[2] + ":"), " " + m[3]); else p.textContent = t; return p }
+  const card = (title, paras) => { if (!paras.length) return; const c = el("details", "fcard"), b = el("div", "fbody"); c.append(el("summary", null, title), b); paras.forEach((t) => b.append(para(t))); feats.append(c) }
+  function renderFeatures() {
+    feats.replaceChildren(); unlockRow.replaceChildren()
+    if (!SRD) return
+    const ck = srdFind("classes", d.cls), cl = SRD.classes[ck], sub = cl?.subclasses.find((x) => x.name.toLowerCase() === String(d.sub ?? "").trim().toLowerCase())
+    if (cl) card(`Class · ${ck}`, [...cl.hope.map((t) => "Hope feature - " + t), ...cl.features])
+    if (sub) {
+      card(`Subclass · ${sub.name}${sub.spellcast ? ` (Spellcast: ${sub.spellcast})` : ""}`, [
+        ...sub.foundation, ...(unlock.spec ? sub.specialization : []), ...(unlock.mast ? sub.mastery : [])])
+      for (const [k, l] of [["spec", "Specialization taken"], ["mast", "Mastery taken"]]) {
+        const b = btn("cond", l, () => { unlock[k] = !unlock[k]; queueSheetSave(); renderFeatures() })
+        b.setAttribute("aria-pressed", String(!!unlock[k])); unlockRow.append(b)
+      }
+    }
+    const ak = srdFind("ancestries", d.anc), mk = srdFind("communities", d.com)
+    if (ak) card(`Ancestry · ${ak}`, SRD.ancestries[ak])
+    if (mk) card(`Community · ${mk}`, SRD.communities[mk])
+    if (!feats.children.length) feats.append(el("p", "empty", "Pick a class, ancestry or community from the lists above to see its features here."))
+  }
 
   const panels = el("div", "panels")
   $("sform").replaceChildren(head, traits, panels)
@@ -791,10 +868,12 @@ function openSheet(id) {
     panel("Armor & stats", shields, track(d, "slots", "Armor slots", 4, "shield", "hydro"), thresholds,
       track(d, "hp", "HP", 6, "heart", "danger"), track(d, "stress", "Stress", 6, "diamond", "terrain"), track(d, "hope", "Hope", 6, "diamond", "hydro"), conds),
     panel("Weapons & armor", track(d, "prof", "Proficiency", 6, "diamond", "ink-2"),
-      list(d, "weapons", [["name", "Weapon", "wname"], ["trait", "Trait · range", "wtrait"], ["dmg", "Damage", "wdmg"]], "Add weapon", "Weapon"), armorCard, field(d, "cards", "Domain cards", { area: 1, cls: "wide" })),
+      list(d, "weapons", [["name", "Weapon", "wname"], ["trait", "Trait · range", "wtrait"], ["dmg", "Damage", "wdmg"]], "Add weapon", "Weapon", { dl: "dl-weapon", pick: pickWeapon }), armorCard, field(d, "cards", "Domain cards", { area: 1, cls: "wide" })),
     panel("Experiences", list(d, "experiences", [["name", "Experience", "wname"], ["mod", "+2", "wmod", 1]], "Add experience", "Experience"),
       field(d, "gold", "Gold", { num: 1 }), field(d, "inv", "Inventory", { area: 1 }), field(d, "notes", "Notes", { area: 1 })),
+    Object.assign(panel("Features", unlockRow, feats), { className: "panel fullw" }),
   )
+  renderFeatures()
   renderSheetList()
 }
 
