@@ -88,12 +88,9 @@
                      -webkit-mask-image: linear-gradient(to left, #000 25%, transparent 70%); mask-image: linear-gradient(to left, #000 25%, transparent 70%); }
   .sheet-row { position: relative; display: grid; gap: var(--s-4) var(--s-5); }
   .sheet-meta { display: grid; gap: var(--s-3); justify-items: start; }
-  .sheet-ref { display: flex; align-items: center; gap: var(--s-3); }
   .sheet-name { min-width: 0; align-self: end; }
   .sheet-name h1 { margin: 0; font: 600 clamp(var(--t-xl), 5vw, var(--t-2xl))/1.05 var(--display); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
   .sheet-name .sub { margin-top: var(--s-2); font-size: var(--t-sm); color: var(--ink-2); }
-  .scale { display: block; width: 6.125rem; height: 1.5rem; color: var(--ink); }
-  .scale text { font: 600 10px var(--display); letter-spacing: .1em; fill: var(--ink-2); text-transform: uppercase; }
   .surveyor { display: flex; align-items: center; gap: var(--s-2) var(--s-3); flex-wrap: wrap; }
   .surveyor .who { font-size: var(--t-sm); color: var(--ink-2); }
   /* Log out pins to the sheet's top-right corner; .sheet-row is the positioned ancestor. */
@@ -207,7 +204,7 @@
     .split:not(.open) .reader { display: none; }
     .only-narrow { display: inline-flex; }
     /* Phones: one compact title block, no contours behind the lettering. */
-    .sheet .contours, .sheet-ref { display: none; }
+    .sheet .contours { display: none; }
     .sheet-meta { gap: 0; }
     .surveyor { flex-wrap: nowrap; width: 100%; }
     .surveyor .who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -231,14 +228,6 @@
       <div class="sub num" id="sheetSub">&nbsp;</div>
     </div>
     <div class="sheet-meta">
-      <div class="sheet-ref">
-        <span class="label" id="sheetNo">&nbsp;</span>
-        <svg class="scale" viewBox="0 0 98 24" aria-hidden="true">
-          <rect x="0.5" y="2.5" width="96" height="5" fill="none" stroke="currentColor" stroke-width="1" />
-          <rect x="0.5" y="2.5" width="24" height="5" fill="currentColor" /><rect x="48.5" y="2.5" width="24" height="5" fill="currentColor" />
-          <text x="97" y="21" text-anchor="end">1 league</text><text x="0" y="21">0</text>
-        </svg>
-      </div>
       <div class="surveyor" id="whobar" hidden>
         <span class="who" id="who"></span>
         <button class="btn btn-text" id="signout" type="button">Log out</button>
@@ -258,7 +247,6 @@
   // Name the sheet before the Firebase modules finish loading, so the title never flashes wrong.
   ;(function () {
     var h = location.hash.slice(1), quests = h === "quests" || h === "objectives"
-    document.getElementById("sheetNo").textContent = "Ecerah · Sheet " + (quests ? "II" : "I")
     document.getElementById("sheetTitle").textContent = quests ? "Quests" : "The party's journal"
     try { var t = parent.document.documentElement.getAttribute("saved-theme"); if (t) document.documentElement.dataset.theme = t } catch (e) {}
   })()
