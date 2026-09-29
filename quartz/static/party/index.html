@@ -193,24 +193,60 @@
   .mark[aria-pressed="true"] .ink { transform: scaleY(1); }
   .mark[aria-pressed="true"] .pt { opacity: 1; }
 
-  /* Character sheet: ruled fields, trait cells, tick-box tracks. */
-  .sform { display: grid; gap: var(--s-5); margin-top: var(--s-5); }
+  /* Character sheet: a dashboard of survey panels. */
+  .chars { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-5); }
+  .chip { min-height: 2.5rem; padding: 0 var(--s-4); background: none; border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-2); cursor: pointer; font: 600 var(--t-sm)/1 var(--display); letter-spacing: .08em; text-transform: uppercase; }
+  .chip:hover { border-color: var(--ink-2); }
+  .chip[aria-current="true"] { border-color: var(--hydro); background: var(--hydro-tint); color: var(--ink); }
+  .chip small { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--ink-3); }
+  .sform { display: grid; gap: var(--s-6); margin-top: var(--s-5); }
   .fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--s-3) var(--s-4); }
-  .f { display: grid; gap: var(--s-1); align-content: start; }
+  .f { display: grid; gap: var(--s-1); align-content: start; position: relative; }
   .f .field { min-height: 2.5rem; }
-  .f textarea.field { min-height: 6rem; padding: var(--s-2); border: 1px solid var(--rule); border-radius: 3px; background: var(--ground-2); resize: vertical; line-height: 1.5; }
-  .f.wide { grid-column: 1 / -1; }
+  .f textarea.field { min-height: 5rem; padding: var(--s-2); border: 1px solid var(--rule); border-radius: 3px; background: var(--ground-2); resize: vertical; line-height: 1.5; }
+  .fgrid .namef { grid-column: span 2; }
+  .fgrid .namef .field { font: 600 var(--t-md)/1.2 var(--display); }
+  .tier { position: absolute; right: var(--s-1); top: 0; font: 600 var(--t-xs)/1.2 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--hydro); }
   .traits { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: var(--s-2); }
-  .trait { padding: var(--s-2) var(--s-3); border: 1px solid var(--rule); border-top: 2px solid var(--terrain); border-radius: 3px; text-align: center; }
+  .trait { padding: var(--s-2) var(--s-2) var(--s-1); border: 1px solid var(--rule); border-top: 2px solid var(--terrain); border-radius: 3px 3px 12px 12px; text-align: center; }
   .trait .field { text-align: center; font: 600 var(--t-lg)/1 var(--display); }
-  .tracks { display: grid; gap: var(--s-3); }
-  .track { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
-  .track .label { flex: 0 0 6.5rem; }
-  .boxes { display: flex; flex-wrap: wrap; gap: var(--s-1); }
-  .box { width: 2.75rem; height: 2.75rem; display: grid; place-items: center; background: none; border: 0; cursor: pointer; }
-  .box::before { content: ""; width: 1.25rem; height: 1.25rem; border: 1.6px solid var(--ink-2); border-radius: 2px; transition: background-color .15s var(--ease), border-color .15s var(--ease); }
-  .box[aria-pressed="true"]::before { background: var(--hydro); border-color: var(--hydro); }
-  .track .max { width: 3.5rem; min-height: 2rem; text-align: center; color: var(--ink-3); font-size: var(--t-sm); }
+  .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: var(--s-6) var(--s-5); align-items: start; }
+  .panel { display: grid; gap: var(--s-4); padding-top: var(--s-3); border-top: 2px solid var(--rule-strong); min-width: 0; }
+  .panel > .label { margin: 0; }
+  .shields { display: flex; gap: var(--s-6); justify-content: center; }
+  .shield { position: relative; display: grid; place-items: center; width: 5.5rem; height: 6.25rem; }
+  .shield svg { position: absolute; inset: 0 0 1.25rem; width: 100%; height: calc(100% - 1.25rem); fill: var(--ground-2); stroke: var(--terrain); stroke-width: 1.2; }
+  .shield .field { position: relative; width: 3.5rem; margin-top: -1.25rem; text-align: center; border: 0; font: 600 var(--t-lg)/1 var(--display); }
+  .shield .label { position: absolute; bottom: 0; }
+  .thresholds { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: var(--s-2); text-align: center; }
+  .tcell { display: grid; gap: 2px; }
+  .tcell .sub { font-size: var(--t-xs); color: var(--ink-3); }
+  .tval .field { width: 3.5rem; text-align: center; font: 600 var(--t-md)/1 var(--display); border: 1px solid var(--rule-strong); border-radius: 3px; }
+  .track { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-2); }
+  .track .head { flex: 1 0 100%; display: flex; align-items: center; gap: var(--s-2); }
+  .track .head .label { flex: 1; }
+  .step { width: 2.5rem; height: 2rem; background: none; border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-2); font-size: var(--t-md); cursor: pointer; }
+  .step:hover { border-color: var(--ink-2); color: var(--ink); }
+  .pips { display: flex; flex-wrap: wrap; flex: 1 0 100%; }
+  .pip { width: 2.25rem; height: 2.5rem; display: grid; place-items: center; background: none; border: 0; cursor: pointer; color: var(--c, var(--hydro)); }
+  .pip svg { width: 1.5rem; height: 1.5rem; fill: transparent; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; transition: fill .15s var(--ease), transform .12s var(--ease); }
+  .pip:active svg { transform: scale(.9); }
+  .pip[aria-pressed="true"] svg { fill: currentColor; }
+  .track .max { width: 3rem; min-height: 1.75rem; text-align: center; color: var(--ink-3); font-size: var(--t-sm); }
+  .conds { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .cond { min-height: 2.5rem; padding: 0 var(--s-3); background: none; border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-2); cursor: pointer; font: 600 var(--t-xs)/1 var(--display); letter-spacing: .1em; text-transform: uppercase; }
+  .cond[aria-pressed="true"] { border-color: var(--danger); color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); }
+  .rows { display: grid; gap: var(--s-2); }
+  .row { display: grid; grid-template-columns: 1fr auto; grid-auto-flow: dense; gap: var(--s-1) var(--s-2); align-items: center; padding-bottom: var(--s-2); border-bottom: 1px solid var(--rule); }
+  .row .field { min-height: 2.25rem; min-width: 0; }
+  .row .wname { grid-column: 1; font-weight: 600; }
+  .row .wtrait, .row .wdmg { grid-column: 1; font-size: var(--t-sm); color: var(--ink-2); }
+  .row .x { grid-column: 2; grid-row: 1; }
+  .row .wmod { grid-column: 2; grid-row: 1; width: 4rem; text-align: center; }
+  .row:has(.wmod) { grid-template-columns: 1fr 4rem auto; }
+  .row:has(.wmod) .wname { grid-column: 1; } .row:has(.wmod) .wmod { grid-column: 2; } .row:has(.wmod) .x { grid-column: 3; }
+  .listwrap { display: grid; gap: var(--s-2); justify-items: start; }
+  .listwrap .btn { min-height: 2.25rem; padding: 0 var(--s-3); }
 
   @media (min-width: 640px) {
     .split { grid-template-columns: minmax(12rem, 34%) 1fr; gap: var(--s-6); align-items: start; }
@@ -325,30 +361,17 @@
 </section>
 
 <section id="sheets" hidden>
-  <div class="split" id="ssplit">
-    <div class="legend">
-      <div class="legend-head"><span class="label">Characters</span></div>
-      <ul class="entries" id="slist"></ul>
+  <nav class="chars" id="slist" aria-label="Characters"></nav>
+  <div id="sblank" class="uncharted">
+    <svg class="contours" aria-hidden="true"></svg>
+    <div class="copy"><h2 class="lettering">Unsheeted</h2><p id="sblankText">Use New character to begin.</p></div>
+  </div>
+  <div id="sedit" hidden>
+    <div class="sform" id="sform"></div>
+    <div class="note-actions">
+      <button class="btn btn-text btn-danger" id="sdelete" type="button">Delete character</button>
+      <span class="status" id="sstatus" role="status"></span>
     </div>
-    <article class="reader" id="sreader">
-      <div id="sblank" class="uncharted">
-        <svg class="contours" aria-hidden="true"></svg>
-        <div class="copy"><h2 class="lettering">Unsheeted</h2><p id="sblankText">Pick a character.</p></div>
-      </div>
-      <div id="sedit" hidden>
-        <div class="note-head">
-          <div><div class="label">Ref</div><div class="v num" id="sref"></div></div>
-          <div><div class="label">Player</div><div class="v party-name" id="sowner"></div></div>
-          <div><div class="label">Status</div><div class="v" id="sstatus" role="status"></div></div>
-        </div>
-        <div class="sform" id="sform"></div>
-        <div class="note-actions">
-          <button class="btn btn-text btn-danger" id="sdelete" type="button">Delete</button>
-          <span class="status"></span>
-          <button class="btn btn-text only-narrow" id="sclose" type="button">Back to characters</button>
-        </div>
-      </div>
-    </article>
   </div>
 </section>
 
@@ -619,14 +642,15 @@ $("ndelete").onclick = async () => {
 }
 
 // ---------- Character sheets: owner + GM only (see the sheets block in the Firestore rules) ----------
-const SHEET = {
-  head: [["name", "Name"], ["cls", "Class"], ["sub", "Subclass"], ["anc", "Ancestry"], ["com", "Community"], ["lvl", "Level", 1]],
-  traits: ["Agility", "Strength", "Finesse", "Instinct", "Presence", "Knowledge"],
-  stats: [["evasion", "Evasion"], ["armor", "Armor score"], ["major", "Major threshold"], ["severe", "Severe threshold"], ["gold", "Gold"]],
-  tracks: [["hp", "Hit points", 6], ["stress", "Stress", 6], ["hope", "Hope", 6], ["slots", "Armor slots", 3]],
-  areas: [["exp", "Experiences"], ["weap", "Weapons"], ["cards", "Domain cards"], ["inv", "Inventory"], ["notes", "Notes"]],
+const TRAITS = ["Agility", "Strength", "Finesse", "Instinct", "Presence", "Knowledge"]
+const PIP = { // 24x24 paths, filled when marked
+  heart: "M12 21s-7-4.4-9.3-9C1 8.6 3 5 6.5 5c2 0 3.6 1.1 5.5 3 1.9-1.9 3.5-3 5.5-3C21 5 23 8.6 21.3 12 19 16.6 12 21 12 21z",
+  diamond: "M12 2.5 21.5 12 12 21.5 2.5 12z",
+  shield: "M12 2.5 20.5 5.5v6.5c0 4.8-3.6 8-8.5 9.5-4.9-1.5-8.5-4.7-8.5-9.5V5.5z",
 }
-let sheets = [], openSid = null, sheetTimer = null, sheetsLoaded = false, sheetRef = new Map()
+const pipSvg = (shape) => { const s = svgEl("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }); s.append(svgEl("path", { d: PIP[shape] })); return s }
+
+let sheets = [], openSid = null, sheetTimer = null, sheetsLoaded = false
 
 function startSheets() {
   $("newchar").hidden = !me
@@ -638,82 +662,144 @@ function startSheets() {
     const cur = new Map(sheets.map((x) => [x.id, x]))
     sheets = snap.docs.map((d) => ({ id: d.id, ...d.data(), ...(d.id === openSid && cur.get(d.id) ? { data: cur.get(d.id).data } : {}) }))
       .sort((a, b) => (a.created?.toMillis?.() ?? Infinity) - (b.created?.toMillis?.() ?? Infinity))
-    sheetRef = new Map(sheets.map((x, i) => [x.id, `C-${String(i + 1).padStart(2, "0")}`]))
     sheetsLoaded = true
     $("sheetSub").textContent = plural(sheets.length, "character", "characters")
-    renderSheetList()
-    if (!openSid && sheets.length && wide()) openSheet(sheets[0].id)
+    if (openSid && !sheets.some((x) => x.id === openSid)) closeSheet()
+    if (!openSid && sheets.length) openSheet(sheets[0].id)
+    else renderSheetList()
   }))
 }
 
 function renderSheetList() {
-  const ul = $("slist"); ul.replaceChildren()
-  if (!sheetsLoaded) { for (let i = 0; i < 2; i++) ul.append(el("li", "skel")); return }
-  if (!sheets.length) ul.append(el("li", "empty", "No characters yet. Use New character to start one."))
+  const nav = $("slist"); nav.replaceChildren()
+  if (!sheetsLoaded) return
   for (const c of sheets) {
-    const b = el("button", "entry"); b.type = "button"
-    b.setAttribute("aria-current", c.id === openSid ? "true" : "false")
-    const d = c.data || {}
-    b.append(el("span", "ref num", sheetRef.get(c.id)), el("span", "t", d.name || "Unnamed character"), el("span", "m", [d.cls, d.lvl && `Level ${d.lvl}`, me.gm && c.ownerName].filter(Boolean).join(" · ") || "Blank sheet"))
+    const b = el("button", "chip", c.data?.name || "Unnamed"); b.type = "button"
+    if (me.gm) b.append(el("small", null, ` · ${c.ownerName}`))
+    b.setAttribute("aria-current", String(c.id === openSid))
     b.onclick = () => openSheet(c.id)
-    const li = el("li"); li.append(b); ul.append(li)
+    nav.append(b)
   }
-  $("sblankText").textContent = sheets.length ? "Pick a character." : "Use New character to begin."
+  $("sblankText").textContent = me ? "Use New character to begin." : ""
+  $("sblank").hidden = sheets.length > 0
 }
 
-function field(d, key, label, { num, area, cls } = {}) {
+// Small builders: every input writes straight into d and queues a save.
+const put = (d, key, v) => { d[key] = v; queueSheetSave() }
+function field(d, key, label, { num, area, cls, ph } = {}) {
   const w = el("label", "f " + (cls || "")), i = el(area ? "textarea" : "input", "field")
   if (num) i.type = "number"
+  if (ph) i.placeholder = ph
   i.value = d[key] ?? ""
-  i.oninput = () => { d[key] = num && i.value !== "" ? +i.value : i.value; queueSheetSave() }
+  i.oninput = () => put(d, key, num && i.value !== "" ? +i.value : i.value)
   w.append(el("span", "label", label), i)
   return w
 }
+const btn = (cls, text, onclick, aria) => { const b = el("button", cls, text); b.type = "button"; b.onclick = onclick; if (aria) b.setAttribute("aria-label", aria); return b }
+const panel = (title, ...kids) => { const p = el("section", "panel"); p.append(el("h3", "label", title), ...kids); return p }
 
-function track(d, key, label, dflt) {
-  const row = el("div", "track"), boxes = el("div", "boxes"), max = el("input", "field max")
-  max.type = "number"; max.min = 1; max.max = 20; max.setAttribute("aria-label", `${label} maximum`)
-  max.value = d[key + "Max"] ?? dflt
+// Tick-box track with -/+ buttons; clicking a pip marks up to it (click the last one to unmark).
+function track(d, key, label, dflt, shape, tone) {
+  const row = el("div", "track"), pips = el("div", "pips"), max = el("input", "field max")
+  row.style.setProperty("--c", `var(--${tone})`)
+  max.type = "number"; max.min = 1; max.max = 20; max.value = d[key + "Max"] ?? dflt
+  max.setAttribute("aria-label", `${label} maximum`)
+  const cap = () => Math.min(20, Math.max(1, +max.value || dflt))
+  const set = (n) => { d[key] = Math.max(0, Math.min(cap(), n)); queueSheetSave(); draw() }
   const draw = () => {
-    const m = Math.min(20, Math.max(1, +max.value || dflt)), n = Math.min(d[key] || 0, m)
-    boxes.replaceChildren(...Array.from({ length: m }, (_, i) => {
-      const b = el("button", "box"); b.type = "button"; b.setAttribute("aria-pressed", String(i < n)); b.setAttribute("aria-label", `${label} ${i + 1}`)
-      b.onclick = () => { d[key] = n === i + 1 ? i : i + 1; queueSheetSave(); draw() }
+    const m = cap(), n = Math.min(d[key] || 0, m)
+    pips.replaceChildren(...Array.from({ length: m }, (_, i) => {
+      const b = btn("pip", null, () => set(n === i + 1 ? i : i + 1), `${label} ${i + 1} of ${m}`)
+      b.setAttribute("aria-pressed", String(i < n)); b.append(pipSvg(shape))
       return b
     }))
   }
-  max.oninput = () => { d[key + "Max"] = +max.value || dflt; queueSheetSave(); draw() }
+  max.oninput = () => { d[key + "Max"] = cap(); queueSheetSave(); draw() }
+  const head = el("div", "head"); head.append(el("span", "label", label), btn("step", "−", () => set((d[key] || 0) - 1), `Remove one ${label}`), btn("step", "+", () => set((d[key] || 0) + 1), `Add one ${label}`), max)
+  row.append(head, pips)
   draw()
-  row.append(el("span", "label", label), boxes, max)
   return row
+}
+
+// Editable list of rows (weapons, experiences): cols = [[key, placeholder, className, num]...]
+function list(d, key, cols, addText, aria) {
+  const wrap = el("div", "rows"), arr = (d[key] ||= [])
+  const draw = () => {
+    wrap.replaceChildren(...arr.map((it, idx) => {
+      const r = el("div", "row")
+      cols.forEach(([k, ph, cls, num]) => {
+        const i = el("input", "field " + cls); i.placeholder = ph; i.setAttribute("aria-label", `${aria} ${idx + 1} ${ph.toLowerCase()}`)
+        if (num) i.type = "number"
+        i.value = it[k] ?? ""; i.oninput = () => put(it, k, num && i.value !== "" ? +i.value : i.value)
+        r.append(i)
+      })
+      r.append(btn("x", null, () => { arr.splice(idx, 1); queueSheetSave(); draw() }, `Remove ${aria} ${idx + 1}`))
+      r.lastChild.append(icon.x())
+      return r
+    }))
+  }
+  draw()
+  const add = btn("btn btn-line add", `+ ${addText}`, () => { arr.push({}); queueSheetSave(); draw(); wrap.querySelector(".row:last-child input")?.focus() })
+  const frag = el("div", "listwrap"); frag.append(wrap, add)
+  return frag
+}
+
+const shield = (d, key, label) => {
+  const w = el("label", "shield"), i = el("input", "field"); i.type = "number"; i.value = d[key] ?? ""
+  i.oninput = () => put(d, key, i.value !== "" ? +i.value : "")
+  w.append(pipSvg("shield"), i, el("span", "label", label))
+  return w
 }
 
 function openSheet(id) {
   flushSheetSave()
   const c = sheets.find((x) => x.id === id); if (!c) return
   openSid = id
-  const d = c.data ||= {}, f = $("sform")
-  $("ssplit").classList.add("open")
+  const d = c.data ||= {}, cond = (d.cond ||= {})
   $("sblank").hidden = true; $("sedit").hidden = false
-  $("sref").textContent = sheetRef.get(id) || "New"; $("sowner").textContent = c.ownerName; $("sstatus").textContent = `Saved ${when(c.updated)}`
-  const grid = (...kids) => { const g = el("div", "fgrid"); g.append(...kids); return g }
+  $("sstatus").textContent = c.updated ? `Saved ${when(c.updated)}` : ""
+
+  const level = field(d, "lvl", "Level", { num: 1 }), tier = el("span", "tier num")
+  const setTier = () => { const l = +d.lvl || 0; tier.textContent = l ? `Tier ${l >= 8 ? 4 : l >= 5 ? 3 : l >= 2 ? 2 : 1}` : "" }
+  level.append(tier); level.querySelector("input").addEventListener("input", setTier); setTier()
+  const head = el("div", "fgrid")
+  const nameField = field(d, "name", "Name", { cls: "namef" })
+  nameField.querySelector("input").addEventListener("input", renderSheetList)
+  head.append(nameField, field(d, "cls", "Class"), field(d, "sub", "Subclass"), field(d, "anc", "Ancestry"), field(d, "com", "Community"), level)
+
   const traits = el("div", "traits")
-  SHEET.traits.forEach((t) => { const w = field(d, t.toLowerCase(), t, { num: 1 }); w.classList.add("trait"); traits.append(w) })
-  const tracks = el("div", "tracks"); SHEET.tracks.forEach(([k, l, m]) => tracks.append(track(d, k, l, m)))
-  f.replaceChildren(
-    grid(...SHEET.head.map(([k, l, n]) => field(d, k, l, { num: n }))),
-    traits,
-    grid(...SHEET.stats.map(([k, l]) => field(d, k, l, { num: 1 }))),
-    tracks,
-    grid(...SHEET.areas.map(([k, l]) => field(d, k, l, { area: 1, cls: "wide" }))),
+  TRAITS.forEach((t) => { const w = field(d, t.toLowerCase(), t, { num: 1, ph: "0" }); w.classList.add("trait"); traits.append(w) })
+
+  const thresholds = el("div", "thresholds")
+  const cell = (lbl, sub) => { const x = el("div", "tcell"); x.append(el("span", "label", lbl), el("span", "sub", sub)); return x }
+  const tin = (k, lbl) => { const w = field(d, k, lbl, { num: 1 }); w.classList.add("tval"); w.firstChild.className = "sr"; return w }
+  thresholds.append(cell("Minor", "mark 1 HP"), tin("major", "Major threshold"), cell("Major", "mark 2 HP"), tin("severe", "Severe threshold"), cell("Severe", "mark 3 HP"))
+
+  const conds = el("div", "conds")
+  for (const [k, l] of [["hidden", "Hidden"], ["restrained", "Restrained"], ["vulnerable", "Vulnerable"]]) {
+    const b = btn("cond", l, () => { cond[k] = !cond[k]; b.setAttribute("aria-pressed", String(cond[k])); queueSheetSave() })
+    b.setAttribute("aria-pressed", String(!!cond[k])); conds.append(b)
+  }
+  const shields = el("div", "shields"); shields.append(shield(d, "evasion", "Evasion"), shield(d, "armor", "Armor"))
+
+  const armor = (d.armorItem ||= {})
+  const armorCard = el("div", "fgrid"); armorCard.append(field(armor, "name", "Armor"), field(armor, "note", "Tier · features"))
+
+  const panels = el("div", "panels")
+  $("sform").replaceChildren(head, traits, panels)
+  panels.append(
+    panel("Armor & stats", shields, track(d, "slots", "Armor slots", 4, "shield", "hydro"), thresholds,
+      track(d, "hp", "HP", 6, "heart", "danger"), track(d, "stress", "Stress", 6, "diamond", "terrain"), track(d, "hope", "Hope", 6, "diamond", "hydro"), conds),
+    panel("Weapons & armor", track(d, "prof", "Proficiency", 6, "diamond", "ink-2"),
+      list(d, "weapons", [["name", "Weapon", "wname"], ["trait", "Trait · range", "wtrait"], ["dmg", "Damage", "wdmg"]], "Add weapon", "Weapon"), armorCard, field(d, "cards", "Domain cards", { area: 1, cls: "wide" })),
+    panel("Experiences", list(d, "experiences", [["name", "Experience", "wname"], ["mod", "+2", "wmod", 1]], "Add experience", "Experience"),
+      field(d, "gold", "Gold", { num: 1 }), field(d, "inv", "Inventory", { area: 1 }), field(d, "notes", "Notes", { area: 1 })),
   )
   renderSheetList()
-  if (!wide()) $("sreader").scrollIntoView({ block: "start" })
 }
 
 function closeSheet() {
   flushSheetSave(); openSid = null
-  $("ssplit").classList.remove("open")
   $("sedit").hidden = true; $("sblank").hidden = false
   renderSheetList()
 }
@@ -729,7 +815,6 @@ function flushSheetSave() {
 }
 addEventListener("pagehide", () => flushSheetSave())
 
-$("sclose").onclick = closeSheet
 $("newchar").onclick = async () => {
   $("newchar").disabled = true
   try {
