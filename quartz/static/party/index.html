@@ -204,6 +204,8 @@
   .f { display: grid; gap: var(--s-1); align-content: start; position: relative; }
   .f .field { min-height: 2.5rem; }
   .f textarea.field { min-height: 5rem; padding: var(--s-2); border: 1px solid var(--rule); border-radius: 3px; background: var(--ground-2); resize: vertical; line-height: 1.5; }
+  .f .sel { display: flex; }
+  .f .sel select { width: 100%; }
   .fgrid .namef { grid-column: span 2; }
   .fgrid .namef .field { font: 600 var(--t-md)/1.2 var(--display); }
   .tier { position: absolute; right: var(--s-1); top: 0; font: 600 var(--t-xs)/1.2 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--hydro); }
@@ -718,6 +720,15 @@ function field(d, key, label, { num, area, cls, ph, list: dl, pick } = {}) {
   w.append(el("span", "label", label), i)
   return w
 }
+// Drop-down over SRD names; a stored value that isn't in the list (homebrew) stays selectable.
+function choice(d, key, label, names, pick, off) {
+  const w = el("label", "f"), wrap = el("span", "sel"), sel = el("select", "field"), cur = d[key] ?? ""
+  sel.append(new Option("—", ""), ...(cur !== "" && !names.includes(String(cur)) ? [cur, ...names] : names).map((n) => new Option(n, n)))
+  sel.value = cur; sel.disabled = !!off
+  sel.onchange = () => pick(sel.value)
+  wrap.append(sel); w.append(el("span", "label", label), wrap)
+  return w
+}
 const btn = (cls, text, onclick, aria) => { const b = el("button", cls, text); b.type = "button"; b.onclick = onclick; if (aria) b.setAttribute("aria-label", aria); return b }
 const panel = (title, ...kids) => { const p = el("section", "panel"); p.append(el("h3", "label", title), ...kids); return p }
 
@@ -787,14 +798,15 @@ function openSheet(id) {
   const again = () => openSheet(id)
   const applyArmor = () => { const b = d.armorItem?.base; if (b) { const l = +d.lvl || 0; d.major = b[0] + l; d.severe = b[1] + l } } // SRD: thresholds = base + level
   const pickClass = (v) => {
+    if (!v) { d.cls = d.sub = ""; queueSheetSave(); return again() }
     const k = srdFind("classes", v); if (!k) return
     const c = SRD.classes[k]
     Object.assign(d, { cls: k, evasion: c.evasion, hpMax: c.hp })
     if (!c.subclasses.some((x) => x.name === d.sub)) d.sub = ""
     queueSheetSave(); again()
   }
-  const pickSub = (v) => { const x = subsOf().find((s) => s.name.toLowerCase() === v.trim().toLowerCase()); if (x) d.sub = x.name; queueSheetSave(); renderFeatures() }
-  const pickKin = (group, key) => (v) => { const k = srdFind(group, v); if (k) d[key] = k; queueSheetSave(); renderFeatures() }
+  const pickSub = (v) => { d.sub = v; queueSheetSave(); renderFeatures() }
+  const pickKin = (group, key) => (v) => { d[key] = v; queueSheetSave(); renderFeatures() }
   const pickArmor = (v) => {
     const a = srdItem("armor", v); if (!a) return
     Object.assign(armor, { name: a.name, base: [a.major, a.severe], note: `Tier ${a.tier}${a.feature ? " · " + a.feature : ""}` })
@@ -807,20 +819,20 @@ function openSheet(id) {
   }
   const subsOf = () => SRD?.classes[srdFind("classes", d.cls)]?.subclasses || Object.values(SRD?.classes || {}).flatMap((c) => c.subclasses)
   if (SRD) {
-    datalist("dl-cls", Object.keys(SRD.classes)); datalist("dl-sub", subsOf().map((x) => x.name))
-    datalist("dl-anc", Object.keys(SRD.ancestries)); datalist("dl-com", Object.keys(SRD.communities))
     datalist("dl-armor", SRD.armor.map((x) => x.name)); datalist("dl-weapon", SRD.weapons.map((x) => x.name))
   }
   const armor = (d.armorItem ||= {})
 
-  const level = field(d, "lvl", "Level", { num: 1, pick: () => { applyArmor(); queueSheetSave(); again() } }), tier = el("span", "tier num")
+  const setLevel = (v) => { d.lvl = v === "" ? "" : +v; applyArmor(); queueSheetSave(); again() }
+  const level = SRD ? choice(d, "lvl", "Level", Array.from({ length: 10 }, (_, i) => String(i + 1)), setLevel) : field(d, "lvl", "Level", { num: 1, pick: setLevel }), tier = el("span", "tier num")
   const setTier = () => { const l = +d.lvl || 0; tier.textContent = l ? `Tier ${l >= 8 ? 4 : l >= 5 ? 3 : l >= 2 ? 2 : 1}` : "" }
-  level.append(tier); level.querySelector("input").addEventListener("input", setTier); setTier()
+  level.append(tier); level.querySelector("input")?.addEventListener("input", setTier); setTier()
   const head = el("div", "fgrid")
   const nameField = field(d, "name", "Name", { cls: "namef" })
   nameField.querySelector("input").addEventListener("input", renderSheetList)
-  head.append(nameField, field(d, "cls", "Class", { list: "dl-cls", pick: pickClass }), field(d, "sub", "Subclass", { list: "dl-sub", pick: pickSub }),
-    field(d, "anc", "Ancestry", { list: "dl-anc", pick: pickKin("ancestries", "anc") }), field(d, "com", "Community", { list: "dl-com", pick: pickKin("communities", "com") }), level)
+  if (SRD) head.append(nameField, choice(d, "cls", "Class", Object.keys(SRD.classes), pickClass), choice(d, "sub", "Subclass", subsOf().map((x) => x.name), pickSub, !srdFind("classes", d.cls)),
+    choice(d, "anc", "Ancestry", Object.keys(SRD.ancestries), pickKin("ancestries", "anc")), choice(d, "com", "Community", Object.keys(SRD.communities), pickKin("communities", "com")), level)
+  else head.append(nameField, field(d, "cls", "Class"), field(d, "sub", "Subclass"), field(d, "anc", "Ancestry"), field(d, "com", "Community"), level)
 
   const traits = el("div", "traits")
   TRAITS.forEach((t) => { const w = field(d, t.toLowerCase(), t, { num: 1, ph: "0" }); w.classList.add("trait"); traits.append(w) })
