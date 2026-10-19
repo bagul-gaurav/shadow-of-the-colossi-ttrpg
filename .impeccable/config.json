@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-color",
+        "value": "#000",
+        "createdAt": "2026-09-29T06:50:55.892Z",
+        "reason": "Claude: #000 is the opaque stop of the contour mask-image gradient (alpha only, never rendered as a colour)"
+      }
+    ]
+  }
+}
